@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="21" height="31" tilewidth="24" tileheight="24" nextobjectid="1">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="25" height="25" tilewidth="24" tileheight="24" nextobjectid="21">
  <tileset firstgid="1" name="level1" tilewidth="24" tileheight="24" tilecount="8">
   <image source="level1tile.png" width="192" height="24"/>
  </tileset>
- <layer name="Camada de Tiles 1" width="21" height="31">
+ <layer name="Camada de Tiles 1" width="25" height="25">
   <data encoding="base64" compression="zlib">
-   eJzllEsOwCAIRNHe/87dNg0wMxRNGheT+OOhgEwzmxs1HvLmnSyGPRyp7LePaKzO/8rsUuQ78l+xOZXZnSOmTi7yXMSs/NGMyZxVewny4TGiOGYxZ/oR+kdM/pAd2qvcJYujuofq68s6+1YlFlVGZrvqnmxdsXlZxeySVw8n6QbAMAQZ
+   eJztU0EOwCAIQ/f/P3tdFqDFRrzsQIKiFEqZZjYbbBy0N4bnR/Ww8RsYXVxV+0R+dKfiVXLs8sLOg+lfyYU0gjAYjXlvKvxkGKwGn81/TB/fnBFvCldKvHvPvZqUM9pRBSPTt8drFSPboZvzQH2xeu3COM3Vb5wti3oD4Q==
   </data>
  </layer>
+ <layer name="Camada de Tiles 2" width="25" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztk0sOwCAIRIn3P3S3DR1+Q9GNk5CgKA8Vl4isDTapNwP5Vj3Z+AnGlDTPq4Hxrbkur5KDUeU9Mufv5Ip6JGJkegyt8VRhRPpzn3UOndO6t85ddeK7/zmqqTNGvmazDAExNMcyvD80pUqPMfETjCl59Vz72gMVbwLb
+  </data>
+ </layer>
+ <objectgroup name="Camada de Objetos 1">
+  <object id="1" x="120" y="48" width="168" height="48"/>
+  <object id="4" x="312" y="48" width="168" height="48"/>
+  <object id="6" x="0" y="528" width="600" height="72"/>
+  <object id="9" x="0" y="0" width="600" height="24"/>
+  <object id="10" x="0" y="24" width="24" height="504"/>
+  <object id="11" x="576" y="24" width="24" height="504"/>
+  <object id="13" x="48" y="48" width="48" height="48"/>
+  <object id="14" x="504" y="48" width="48" height="48"/>
+  <object id="15" x="504" y="456" width="48" height="48"/>
+  <object id="16" x="48" y="456" width="48" height="48"/>
+  <object id="17" x="216" y="360" width="72" height="72"/>
+  <object id="20" x="312" y="360" width="72" height="72"/>
+ </objectgroup>
 </map>
