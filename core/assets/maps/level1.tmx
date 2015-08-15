@@ -39,7 +39,7 @@
   <object id="35" x="48" y="384" width="24" height="48"/>
   <object id="37" x="528" y="384" width="24" height="48"/>
   <object id="38" x="120" y="360" width="72" height="72"/>
-  <object id="39" x="408" y="362" width="72" height="72"/>
+  <object id="39" x="408" y="360" width="72" height="72"/>
   <object id="40" x="480" y="408" width="24" height="24"/>
   <object id="42" x="96" y="408" width="24" height="24"/>
   <object id="43" x="192" y="288" width="24" height="48"/>
@@ -56,7 +56,7 @@
   <object id="54" x="48" y="360" width="48" height="24"/>
   <object id="55" x="432" y="192" width="48" height="24"/>
   <object id="56" x="504" y="168" width="48" height="24"/>
-  <object id="57" x="46" y="167" width="48" height="24"/>
+  <object id="57" x="48" y="168" width="48" height="24"/>
   <object id="58" x="96" y="120" width="48" height="24"/>
   <object id="59" x="456" y="120" width="48" height="24"/>
   <object id="60" x="48" y="120" width="24" height="48"/>
