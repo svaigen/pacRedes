@@ -3,13 +3,13 @@ package pacman.desktop;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import pacman.PacMan;
+import pacman.App;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
                 config.width = 600;
                 config.height = 600;
-		new LwjglApplication(new PacMan(), config);
+		new LwjglApplication(new App(), config);
 	}
 }
