@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -12,7 +13,6 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class Pacman {
 
-    static final int NUM_FRAMES = 20;
     static final int DELAY_MAX = 10;
     protected Sprite personagem;
     protected TextureRegion frames[];
@@ -22,12 +22,10 @@ public class Pacman {
     protected int direcaoPretendida;
     protected float velocidade;
     protected float delay;
+    protected SpriteBatch batch;
 
-    public Pacman(float width, float height, Texture sprites, float velocidade) {
-        frames = new TextureRegion[NUM_FRAMES];
-        for (int i = 0; i < NUM_FRAMES; i++) {
-            frames[i] = new TextureRegion(sprites, i * 24, 0, 24, 24);
-        }
+    public Pacman(float width, float height, TextureRegion[] sprites, float velocidade) {
+        frames = sprites;
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(width / 2 - this.personagem.getWidth() / 2, (height / 2 - this.personagem.getHeight() / 2) - 48);
         this.isAlive = true;
@@ -36,6 +34,7 @@ public class Pacman {
         this.direcaoPretendida = App.PARADO;
         this.velocidade = velocidade;
         this.delay = DELAY_MAX;
+        this.batch = new SpriteBatch();
     }
 
     public void animate() {
@@ -52,6 +51,9 @@ public class Pacman {
                 this.delay--;
             }
         }
+        this.batch.begin();
+        this.personagem.draw(batch);
+        this.batch.end();
     }
 
     public void anda(MapObjects objects) {
