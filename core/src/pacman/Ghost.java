@@ -30,16 +30,20 @@ public class Ghost {
     protected float tempoParaFicarLivre;
 
     public Ghost(float x, float y, TextureRegion[] sprites, float velocidade, int ghostId) {
-        frames = sprites;
+        frames = sprites;        
+        this.velocidade = velocidade;
+        this.batch = new SpriteBatch();
+        this.init(x, y, ghostId);
+    }
+    
+    public void init(float x, float y, int ghostId){
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(x, y);
         this.estado = (ghostId == 3) ? ESTADO_NORMAL : ESTADO_PRESO;
         this.frameAtual = 0;
-        this.direcao = (ghostId == 3) ? App.DIREITA : App.PARADO;
-        this.velocidade = velocidade;
-        this.delay = DELAY_MAX;
-        this.batch = new SpriteBatch();
+        this.direcao = (ghostId == 3) ? App.DIREITA : App.PARADO;        
         this.tempoParaFicarLivre = (ghostId == 3) ? 0 : TIME_ARRESTED * (ghostId + 1);
+        this.delay = DELAY_MAX;
     }
 
     public void anda(MapObjects paredes, MapObjects pontosColisao) {

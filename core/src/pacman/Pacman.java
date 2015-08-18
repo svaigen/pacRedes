@@ -23,16 +23,22 @@ public class Pacman {
     protected float velocidade;
     protected float delay;
     protected SpriteBatch batch;
+    protected int vidas;
 
-    public Pacman(float width, float height, TextureRegion[] sprites, float velocidade) {
+    public Pacman(float width, float height, TextureRegion[] sprites, float velocidade, int vidas) {
         frames = sprites;
+        this.velocidade = velocidade;
+        this.vidas = vidas;
+        this.init(width, height);
+    }
+    
+    public void init(float width, float height){
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(width / 2 - this.personagem.getWidth() / 2, (height / 2 - this.personagem.getHeight() / 2) - 48);
         this.alive = true;
         this.frameAtual = 0;
         this.direcaoAtual = App.PARADO;
         this.direcaoPretendida = App.PARADO;
-        this.velocidade = velocidade;
         this.delay = DELAY_MAX;
         this.batch = new SpriteBatch();
     }
@@ -151,9 +157,21 @@ public class Pacman {
                 this.delay = DELAY_MAX;
                 this.frameAtual = 8;
                 this.personagem.setRegion(frames[frameAtual]);
+                this.vidas--;
                 return true;
             }
         }
         return false;
+    }
+
+    boolean terminouAnimacaoMorte() {
+        if(this.delay == 0 && this.frameAtual == 19){
+            return true;
+        }
+        return false;
+    }
+
+    boolean semVidas() {
+        return this.vidas==0?true:false;
     }
 }

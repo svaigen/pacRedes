@@ -11,9 +11,9 @@
    eJztU0EOwCAIQ/f/P3tdFqDFRrzsQIKiFEqZZjYbbBy0N4bnR/Ww8RsYXVxV+0R+dKfiVXLs8sLOg+lfyYU0gjAYjXlvKvxkGKwGn81/TB/fnBFvCldKvHvPvZqUM9pRBSPTt8drFSPboZvzQH2xeu3COM3Vb5wti3oD4Q==
   </data>
  </layer>
- <layer name="Camada de Tiles 2" width="25" height="25" visible="0">
+ <layer name="Camada de Tiles 2" width="25" height="25">
   <data encoding="base64" compression="zlib">
-   eJztk0sOwCAIRIn3P3S3DR1+Q9GNk5CgKA8Vl4isDTapNwP5Vj3Z+AnGlDTPq4Hxrbkur5KDUeU9Mufv5Ip6JGJkegyt8VRhRPpzn3UOndO6t85ddeK7/zmqqTNGvmazDAExNMcyvD80pUqPMfETjCl59Vz72gMVbwLb
+   eJztVMsKwCAM69X9/wfv4kFG0yZ2KowFBB81qdFqtgdtYRs1vD7Kh10/obHLK/WcWd+bu17Qa52HjZ3xhb2PTLvKZWCe1cj2RzERWA3m/SEetc6Z/Ni4r3v15KyMszqvaER17vmiaiC+mX9D+V/QmRCU9RMaq736weEGwkQIUQ==
   </data>
  </layer>
  <objectgroup name="Camada de Objetos 1" visible="0">
@@ -129,8 +129,7 @@
   <object id="123" x="288" y="504" width="24" height="24"/>
   <object id="124" x="480" y="504" width="24" height="24"/>
  </objectgroup>
- <objectgroup name="Camada de Objetos 3" visible="0"/>
- <objectgroup name="Camada de Objetos 4">
+ <objectgroup name="Camada de Objetos 3" visible="0">
   <object id="137" type="1" gid="9" x="552" y="528" width="24" height="24"/>
   <object id="139" type="1" gid="9" x="528" y="528" width="24" height="24"/>
   <object id="140" type="1" gid="9" x="504" y="528" width="24" height="24"/>
