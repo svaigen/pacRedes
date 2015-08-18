@@ -16,7 +16,7 @@ public class Pacman {
     static final int DELAY_MAX = 10;
     protected Sprite personagem;
     protected TextureRegion frames[];
-    protected boolean isAlive;
+    protected boolean alive;
     protected int frameAtual;
     protected int direcaoAtual;
     protected int direcaoPretendida;
@@ -28,7 +28,7 @@ public class Pacman {
         frames = sprites;
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(width / 2 - this.personagem.getWidth() / 2, (height / 2 - this.personagem.getHeight() / 2) - 48);
-        this.isAlive = true;
+        this.alive = true;
         this.frameAtual = 0;
         this.direcaoAtual = App.PARADO;
         this.direcaoPretendida = App.PARADO;
@@ -38,15 +38,25 @@ public class Pacman {
     }
 
     public void animate() {
-        if (isAlive && this.direcaoAtual != App.PARADO) {
+        if (alive && this.direcaoAtual != App.PARADO) {
             if (this.delay == 0) {
                 if ((this.frameAtual % 2) == 0) {
-                    this.frameAtual = (this.direcaoAtual*2) + 1;
+                    this.frameAtual = (this.direcaoAtual * 2) + 1;
                 } else {
-                    this.frameAtual = (this.direcaoAtual*2);
+                    this.frameAtual = (this.direcaoAtual * 2);
                 }
                 this.personagem.setRegion(frames[frameAtual]);
                 delay = DELAY_MAX;
+            } else {
+                this.delay--;
+            }
+        } else if (!alive) {
+            if (this.delay == 0) {
+                if (this.frameAtual < 19) {
+                    this.frameAtual++;
+                    this.personagem.setRegion(frames[frameAtual]);
+                    this.delay = DELAY_MAX;
+                }
             } else {
                 this.delay--;
             }
@@ -70,38 +80,38 @@ public class Pacman {
             this.direcaoPretendida = App.BAIXO;
         }
 
-        if (!colidiu(objects, direcaoPretendida)) {
+        if (!colidiuWalls(objects, direcaoPretendida)) {
             direcaoAtual = direcaoPretendida;
         }
         switch (direcaoAtual) {
             case App.ESQUERDA:
-                if (!colidiu(objects, App.ESQUERDA)) {
+                if (!colidiuWalls(objects, App.ESQUERDA)) {
                     this.personagem.translateX(-velocidade);
                 }
                 break;
             case App.DIREITA:
-                if (!colidiu(objects, App.DIREITA)) {
+                if (!colidiuWalls(objects, App.DIREITA)) {
                     this.personagem.translateX(velocidade);
                 }
                 break;
             case App.CIMA:
-                if (!colidiu(objects, App.CIMA)) {
+                if (!colidiuWalls(objects, App.CIMA)) {
                     this.personagem.translateY(velocidade);
                 }
                 break;
             case App.BAIXO:
-                if (!colidiu(objects, App.BAIXO)) {
+                if (!colidiuWalls(objects, App.BAIXO)) {
                     this.personagem.translateY(-velocidade);
                 }
                 break;
         }
-        if (colidiu(objects, direcaoAtual)) {
+        if (colidiuWalls(objects, direcaoAtual)) {
             this.direcaoAtual = App.PARADO;
         }
 
     }
 
-    boolean colidiu(MapObjects objects, int direcao) {
+    boolean colidiuWalls(MapObjects objects, int direcao) {
         float x = this.personagem.getX();
         float y = this.personagem.getY();
 
@@ -123,6 +133,24 @@ public class Pacman {
         for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleObject.getRectangle();
             if (Intersector.overlaps(rectangle, r)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean colidiuGhosts(Ghost[] ghosts) {
+        Rectangle rPac = new Rectangle(this.personagem.getX(), this.personagem.getY(),
+                this.personagem.getWidth(), this.personagem.getHeight());
+
+        for (Ghost ghost : ghosts) {
+            Rectangle rGhost = new Rectangle(ghost.personagem.getX(), ghost.personagem.getY(),
+                    ghost.personagem.getWidth(), ghost.personagem.getHeight());
+            if (Intersector.overlaps(rGhost, rPac)) {
+                this.alive = false;
+                this.delay = DELAY_MAX;
+                this.frameAtual = 8;
+                this.personagem.setRegion(frames[frameAtual]);
                 return true;
             }
         }

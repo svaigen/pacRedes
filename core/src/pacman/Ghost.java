@@ -47,29 +47,29 @@ public class Ghost {
                 this.personagem.setPosition(12 * 24, 14 * 24);
                 this.estado = ESTADO_NORMAL;
             }
-            if (colidiu(objects, direcao) || direcao == App.PARADO) {
+            if (colidiuWalls(objects, direcao) || direcao == App.PARADO) {
                 do {
                     direcao = new Random().nextInt(4);
-                } while (colidiu(objects, direcao));
+                } while (colidiuWalls(objects, direcao));
             }
             switch (direcao) {
                 case App.ESQUERDA:
-                    if (!colidiu(objects, App.ESQUERDA)) {
+                    if (!colidiuWalls(objects, App.ESQUERDA)) {
                         this.personagem.translateX(-velocidade);
                     }
                     break;
                 case App.DIREITA:
-                    if (!colidiu(objects, App.DIREITA)) {
+                    if (!colidiuWalls(objects, App.DIREITA)) {
                         this.personagem.translateX(velocidade);
                     }
                     break;
                 case App.CIMA:
-                    if (!colidiu(objects, App.CIMA)) {
+                    if (!colidiuWalls(objects, App.CIMA)) {
                         this.personagem.translateY(velocidade);
                     }
                     break;
                 case App.BAIXO:
-                    if (!colidiu(objects, App.BAIXO)) {
+                    if (!colidiuWalls(objects, App.BAIXO)) {
                         this.personagem.translateY(-velocidade);
                     }
                     break;
@@ -96,7 +96,7 @@ public class Ghost {
         this.batch.end();
     }
 
-    boolean colidiu(MapObjects objects, int direcao) {
+    boolean colidiuWalls(MapObjects objects, int direcao) {
         float x = this.personagem.getX();
         float y = this.personagem.getY();
 

@@ -2,13 +2,10 @@ package pacman;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -25,8 +22,13 @@ public class App extends ApplicationAdapter {
     static final int CIMA = 1;
     static final int PARADO = 4;
 
+    static final int ESTADO_INICIO = 1;
+    static final int ESTADO_JOGANDO = 2;
+    static final int ESTADO_PACMAN_MORTO = 3;
+
     float velocidade = 1.0f;
 
+    int estadoJogo;
     Texture sprites;
     TextureRegion frames[];
     TiledMap tiledMap;
@@ -37,6 +39,7 @@ public class App extends ApplicationAdapter {
 
     @Override
     public void create() {
+        estadoJogo = ESTADO_INICIO;
         float w = Gdx.graphics.getWidth();
         float h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
@@ -47,7 +50,6 @@ public class App extends ApplicationAdapter {
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
         pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade);
         inicializaGhosts(ghosts, sprites, velocidade);
-
     }
 
     @Override
@@ -61,10 +63,18 @@ public class App extends ApplicationAdapter {
 
         MapObjects objects = tiledMap.getLayers().get(2).getObjects();
 
-        pacMan.anda(objects);
-        andaGhosts(ghosts, objects);
-        animaGhosts(ghosts);
-        pacMan.animate();
+        if (estadoJogo == ESTADO_PACMAN_MORTO) {
+            pacMan.animate();
+            animaGhosts(ghosts);
+        } else {
+            pacMan.anda(objects);
+            andaGhosts(ghosts, objects);
+            pacMan.animate();
+            animaGhosts(ghosts);
+            if (pacMan.colidiuGhosts(ghosts)) {
+                estadoJogo = ESTADO_PACMAN_MORTO;
+            }
+        }
 
     }
 
@@ -95,12 +105,12 @@ public class App extends ApplicationAdapter {
             }
             int x;
             int y;
-            if (i!=3){
-                x = (i+11)*24;
-                y =12*24;
-            }else{
-                x=12*24;
-                y=14*24;
+            if (i != 3) {
+                x = (i + 11) * 24;
+                y = 12 * 24;
+            } else {
+                x = 12 * 24;
+                y = 14 * 24;
             }
             ghosts[i] = new Ghost(x, y, frames, velocidade, i);
         }
