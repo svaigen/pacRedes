@@ -3,6 +3,7 @@ package pacman;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Intersector;
@@ -26,7 +27,7 @@ public class Ghost {
     protected float velocidade;
     protected float delay;
     protected SpriteBatch batch;
-    protected float timeToBeFree;
+    protected float tempoParaFicarLivre;
 
     public Ghost(float x, float y, TextureRegion[] sprites, float velocidade, int ghostId) {
         frames = sprites;
@@ -38,51 +39,52 @@ public class Ghost {
         this.velocidade = velocidade;
         this.delay = DELAY_MAX;
         this.batch = new SpriteBatch();
-        this.timeToBeFree = (ghostId == 3) ? 0 : TIME_ARRESTED* (ghostId+1);
+        this.tempoParaFicarLivre = (ghostId == 3) ? 0 : TIME_ARRESTED * (ghostId + 1);
     }
 
-    public void anda(MapObjects objects) {
-        if (this.timeToBeFree == 0) {
+    public void anda(MapObjects paredes, MapObjects pontosColisao) {
+        if (this.tempoParaFicarLivre == 0) {
             if (this.estado == ESTADO_PRESO) {
                 this.personagem.setPosition(12 * 24, 14 * 24);
                 this.estado = ESTADO_NORMAL;
             }
-            if (colidiuWalls(objects, direcao) || direcao == App.PARADO) {
+            if (colidiuParedes(paredes, direcao) || direcao == App.PARADO || estaEmPontoColisao(pontosColisao)) {
+                int direcaoAnterior = direcao;
                 do {
                     direcao = new Random().nextInt(4);
-                } while (colidiuWalls(objects, direcao));
+                } while (colidiuParedes(paredes, direcao) || (Math.abs(direcao-direcaoAnterior)== 2));
             }
             switch (direcao) {
                 case App.ESQUERDA:
-                    if (!colidiuWalls(objects, App.ESQUERDA)) {
+                    if (!colidiuParedes(paredes, App.ESQUERDA)) {
                         this.personagem.translateX(-velocidade);
                     }
                     break;
                 case App.DIREITA:
-                    if (!colidiuWalls(objects, App.DIREITA)) {
+                    if (!colidiuParedes(paredes, App.DIREITA)) {
                         this.personagem.translateX(velocidade);
                     }
                     break;
                 case App.CIMA:
-                    if (!colidiuWalls(objects, App.CIMA)) {
+                    if (!colidiuParedes(paredes, App.CIMA)) {
                         this.personagem.translateY(velocidade);
                     }
                     break;
                 case App.BAIXO:
-                    if (!colidiuWalls(objects, App.BAIXO)) {
+                    if (!colidiuParedes(paredes, App.BAIXO)) {
                         this.personagem.translateY(-velocidade);
                     }
                     break;
             }
         } else {
-            timeToBeFree--;
+            tempoParaFicarLivre--;
         }
     }
 
     public void animate() {
         if (this.direcao != App.PARADO) {
             if (this.delay == 0) {
-                this.frameAtual = (this.direcao==App.PARADO)?0:this.direcao+1;
+                this.frameAtual = (this.direcao == App.PARADO) ? 0 : this.direcao + 1;
                 this.personagem.setRegion(frames[frameAtual]);
                 delay = DELAY_MAX;
             } else {
@@ -96,7 +98,7 @@ public class Ghost {
         this.batch.end();
     }
 
-    boolean colidiuWalls(MapObjects objects, int direcao) {
+    boolean colidiuParedes(MapObjects objects, int direcao) {
         float x = this.personagem.getX();
         float y = this.personagem.getY();
 
@@ -118,6 +120,17 @@ public class Ghost {
         for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
             Rectangle rectangle = rectangleObject.getRectangle();
             if (Intersector.overlaps(rectangle, r)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean estaEmPontoColisao(MapObjects pontosColisao) {
+        Rectangle rGhost = new Rectangle(this.personagem.getX(), this.personagem.getY(), this.personagem.getWidth(), this.personagem.getHeight());
+        for (RectangleMapObject rectangleObject : pontosColisao.getByType(RectangleMapObject.class)) {
+            Rectangle rectangle = rectangleObject.getRectangle();
+            if (rectangle.equals(rGhost)) {
                 return true;
             }
         }

@@ -34,6 +34,8 @@ public class App extends ApplicationAdapter {
     TiledMap tiledMap;
     OrthographicCamera camera;
     TiledMapRenderer tiledMapRenderer;
+    MapObjects paredes;
+    MapObjects pontosDecisao;
     Pacman pacMan;
     Ghost ghosts[] = new Ghost[4];
 
@@ -47,6 +49,8 @@ public class App extends ApplicationAdapter {
         camera.update();
         tiledMap = new TmxMapLoader().load("maps/level1.tmx");
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+        paredes = tiledMap.getLayers().get(2).getObjects();
+        pontosDecisao = tiledMap.getLayers().get(3).getObjects();
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
         pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade);
         inicializaGhosts(ghosts, sprites, velocidade);
@@ -60,15 +64,14 @@ public class App extends ApplicationAdapter {
         camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
-
-        MapObjects objects = tiledMap.getLayers().get(2).getObjects();
+        
 
         if (estadoJogo == ESTADO_PACMAN_MORTO) {
             pacMan.animate();
             animaGhosts(ghosts);
         } else {
-            pacMan.anda(objects);
-            andaGhosts(ghosts, objects);
+            pacMan.anda(paredes);
+            andaGhosts(ghosts, paredes,pontosDecisao);
             pacMan.animate();
             animaGhosts(ghosts);
             if (pacMan.colidiuGhosts(ghosts)) {
@@ -122,9 +125,9 @@ public class App extends ApplicationAdapter {
         }
     }
 
-    private void andaGhosts(Ghost[] ghosts, MapObjects objects) {
+    private void andaGhosts(Ghost[] ghosts, MapObjects paredes, MapObjects pontosDecisao) {
         for (Ghost ghost : ghosts) {
-            ghost.anda(objects);
+            ghost.anda(paredes, pontosDecisao);
         }
     }
 
