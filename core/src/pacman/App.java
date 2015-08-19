@@ -6,12 +6,18 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 
 public class App extends ApplicationAdapter {
 
@@ -23,6 +29,7 @@ public class App extends ApplicationAdapter {
     static final int CIMA = 1;
     static final int PARADO = 4;
 
+    static final int ESTADO_ABERTURA = 0;
     static final int ESTADO_INICIO = 1;
     static final int ESTADO_JOGANDO = 2;
     static final int ESTADO_PACMAN_MORTO = 3;
@@ -31,6 +38,8 @@ public class App extends ApplicationAdapter {
     static final int VIDAS_INICIAIS = 3;
 
     float velocidade = 2f;
+    float w;
+    float h;
 
     int estadoJogo;
     int nivel;
@@ -44,24 +53,23 @@ public class App extends ApplicationAdapter {
     MapObjects doces;
     Pacman pacMan;
     Ghost ghosts[] = new Ghost[4];
+    BitmapFont font;
+    SpriteBatch batch;
 
     @Override
     public void create() {
-        estadoJogo = ESTADO_INICIO;
+        estadoJogo = ESTADO_ABERTURA;
         nivel = 1;
-        float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 600, 600);
         camera.update();
-        tiledMap = new TmxMapLoader().load("maps/level1.tmx");
+        tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
+        font = new BitmapFont();
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-        paredes = tiledMap.getLayers().get(2).getObjects();
-        pontosDecisao = tiledMap.getLayers().get(3).getObjects();
-        doces = tiledMap.getLayers().get(4).getObjects();
-        sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
-        pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade, VIDAS_INICIAIS);
-        inicializaGhosts(ghosts, sprites, velocidade);
+        batch = new SpriteBatch();
+        w = Gdx.graphics.getWidth();
+        h = Gdx.graphics.getHeight();
+
     }
 
     @Override
@@ -74,6 +82,16 @@ public class App extends ApplicationAdapter {
         tiledMapRenderer.render();
 
         switch (estadoJogo) {
+            case ESTADO_ABERTURA:
+                if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
+                    inicializaFase1();
+                    estadoJogo = ESTADO_INICIO;
+                } else {
+                    batch.begin();
+                    font.draw(batch, "Aperte qualquer tecla para começar", 180, 150);
+                    batch.end();
+                }
+                break;
             case ESTADO_INICIO:
                 pacMan.animate();
                 animaGhosts(ghosts);
@@ -110,6 +128,7 @@ public class App extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        font.dispose();
         pacMan.batch.dispose();
         sprites.dispose();
     }
@@ -192,6 +211,27 @@ public class App extends ApplicationAdapter {
             }
             ghosts[i].init(x, y, i);
         }
+    }
+
+    private void inicializaFase1() {
+        tiledMap = new TmxMapLoader().load("maps/level1.tmx");
+        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+        paredes = tiledMap.getLayers().get(2).getObjects();
+        pontosDecisao = tiledMap.getLayers().get(3).getObjects();
+        //  criaDoces();
+        //    doces = tiledMap.getLayers().get(1).getProperties().getKeys();
+        doces = tiledMap.getLayers().get(1).getObjects();
+     //   criaDoces(doces);
+         
+        sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
+        pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade, VIDAS_INICIAIS);
+        inicializaGhosts(ghosts, sprites, velocidade);
+    }
+
+    private void criaDoces(MapObjects doces) {
+        TiledMapTileLayer layer = (TiledMapTileLayer)tiledMap.getLayers().get(0);
+        layer.getCell(0, 1).setTile(null);
+
     }
 
 }

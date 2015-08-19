@@ -2,12 +2,14 @@ package pacman;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -30,9 +32,10 @@ public class Pacman {
         this.velocidade = velocidade;
         this.vidas = vidas;
         this.init(width, height);
+
     }
-    
-    public void init(float width, float height){
+
+    public void init(float width, float height) {
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(width / 2 - this.personagem.getWidth() / 2, (height / 2 - this.personagem.getHeight() / 2) - 48);
         this.alive = true;
@@ -165,13 +168,13 @@ public class Pacman {
     }
 
     boolean terminouAnimacaoMorte() {
-        if(this.delay == 0 && this.frameAtual == 19){
+        if (this.delay == 0 && this.frameAtual == 19) {
             return true;
         }
         return false;
     }
 
     boolean semVidas() {
-        return this.vidas==0?true:false;
+        return this.vidas == 0 ? true : false;
     }
 }
