@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -176,5 +177,15 @@ public class Pacman {
 
     boolean semVidas() {
         return this.vidas == 0 ? true : false;
+    }
+
+    boolean comeuDoce(TiledMapTileLayer doces) {
+        int coordenadaX = (int)(this.personagem.getX()/25)+1;
+        int coordenadaY = (int)(this.personagem.getY()/25)+1;
+        if(doces.getCell(coordenadaX, coordenadaY) != null && doces.getCell(coordenadaX, coordenadaY).getTile() != null){
+            doces.getCell(coordenadaX, coordenadaY).setTile(null);
+            return true;
+        }        
+        return false;
     }
 }

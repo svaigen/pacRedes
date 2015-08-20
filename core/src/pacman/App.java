@@ -3,14 +3,13 @@ package pacman;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -36,10 +35,12 @@ public class App extends ApplicationAdapter {
     static final int ESTADO_FIM = 4;
 
     static final int VIDAS_INICIAIS = 3;
+    static final int PONTO_DOCE_PEQUENO = 10;
 
     float velocidade = 2f;
     float w;
     float h;
+    int pontos;
 
     int estadoJogo;
     int nivel;
@@ -50,7 +51,7 @@ public class App extends ApplicationAdapter {
     TiledMapRenderer tiledMapRenderer;
     MapObjects paredes;
     MapObjects pontosDecisao;
-    MapObjects doces;
+    TiledMapTileLayer doces;
     Pacman pacMan;
     Ghost ghosts[] = new Ghost[4];
     BitmapFont font;
@@ -69,7 +70,7 @@ public class App extends ApplicationAdapter {
         batch = new SpriteBatch();
         w = Gdx.graphics.getWidth();
         h = Gdx.graphics.getHeight();
-
+        pontos = 0;
     }
 
     @Override
@@ -98,6 +99,7 @@ public class App extends ApplicationAdapter {
                 if (UsuarioIniciaJogo()) {
                     estadoJogo = ESTADO_JOGANDO;
                 }
+                escrevePontos();
                 break;
             case ESTADO_JOGANDO:
                 pacMan.anda(paredes);
@@ -107,6 +109,8 @@ public class App extends ApplicationAdapter {
                 if (pacMan.colidiuGhosts(ghosts)) {
                     estadoJogo = ESTADO_PACMAN_MORTO;
                 }
+                verificaComeuDoce(pacMan, doces);
+                escrevePontos();
                 break;
             case ESTADO_PACMAN_MORTO:
                 pacMan.animate();
@@ -119,11 +123,19 @@ public class App extends ApplicationAdapter {
                         estadoJogo = ESTADO_INICIO;
                     }
                 }
+                escrevePontos();
                 break;
             case ESTADO_FIM:
                 break;
         }
 
+    }
+
+    public void escrevePontos() {
+        batch.begin();
+        font.setColor(Color.WHITE);
+        font.draw(batch, "Pontos: " + pontos, 0, 20);
+        batch.end();
     }
 
     @Override
@@ -220,18 +232,23 @@ public class App extends ApplicationAdapter {
         pontosDecisao = tiledMap.getLayers().get(3).getObjects();
         //  criaDoces();
         //    doces = tiledMap.getLayers().get(1).getProperties().getKeys();
-        doces = tiledMap.getLayers().get(1).getObjects();
-     //   criaDoces(doces);
-         
+        doces = (TiledMapTileLayer) tiledMap.getLayers().get(1);
+        //   criaDoces(doces);
+
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
         pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade, VIDAS_INICIAIS);
         inicializaGhosts(ghosts, sprites, velocidade);
     }
 
-    private void criaDoces(MapObjects doces) {
-        TiledMapTileLayer layer = (TiledMapTileLayer)tiledMap.getLayers().get(0);
-        layer.getCell(0, 1).setTile(null);
-
+//    private void criaDoces(MapObjects doces) {
+//        TiledMapTileLayer layer = (TiledMapTileLayer)tiledMap.getLayers().get(0);
+//        layer.getCell(0, 1).setTile(null);
+//
+//    }
+    private void verificaComeuDoce(Pacman pacMan, TiledMapTileLayer doces) {
+        if (pacMan.comeuDoce(doces)) {
+            pontos += PONTO_DOCE_PEQUENO;
+        }
     }
 
 }
