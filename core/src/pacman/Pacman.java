@@ -13,6 +13,8 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSets;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Pacman {
 
@@ -149,23 +151,25 @@ public class Pacman {
         return false;
     }
 
-    public boolean colidiuGhosts(Ghost[] ghosts) {
+    public int colidiuGhosts(Ghost[] ghosts) {
         Rectangle rPac = new Rectangle(this.personagem.getX(), this.personagem.getY(),
                 this.personagem.getWidth(), this.personagem.getHeight());
 
-        for (Ghost ghost : ghosts) {
-            Rectangle rGhost = new Rectangle(ghost.personagem.getX(), ghost.personagem.getY(),
-                    ghost.personagem.getWidth(), ghost.personagem.getHeight());
+        for (int i = 0; i < ghosts.length; i++) {
+            Rectangle rGhost = new Rectangle(ghosts[i].personagem.getX(), ghosts[i].personagem.getY(),
+                    ghosts[i].personagem.getWidth(), ghosts[i].personagem.getHeight());
             if (Intersector.overlaps(rGhost, rPac)) {
-                this.alive = false;
-                this.delay = DELAY_MAX;
-                this.frameAtual = 8;
-                this.personagem.setRegion(frames[frameAtual]);
-                this.vidas--;
-                return true;
+                if (ghosts[i].isNormal()) {
+                    this.alive = false;
+                    this.delay = DELAY_MAX;
+                    this.frameAtual = 8;
+                    this.personagem.setRegion(frames[frameAtual]);
+                    this.vidas--;
+                }
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
     boolean terminouAnimacaoMorte() {
@@ -179,13 +183,15 @@ public class Pacman {
         return this.vidas == 0 ? true : false;
     }
 
-    boolean comeuDoce(TiledMapTileLayer doces) {
-        int coordenadaX = (int)(this.personagem.getX()/25)+1;
-        int coordenadaY = (int)(this.personagem.getY()/25)+1;
-        if(doces.getCell(coordenadaX, coordenadaY) != null && doces.getCell(coordenadaX, coordenadaY).getTile() != null){
-            doces.getCell(coordenadaX, coordenadaY).setTile(null);
-            return true;
-        }        
-        return false;
+    int comeDoce(Map doces) {
+        int x = (int) (this.personagem.getX() / 25) + 1;
+        int y = (int) (this.personagem.getY() / 25) + 1;
+        Doce d = (Doce) doces.get(x + "-" + y);
+        if (d != null && !d.comido) {
+            d.layer.getCell(x, y).setTile(null);
+            d.comido = true;
+            return d.isDoceGrande() ? 1 : 0;
+        }
+        return -1;
     }
 }

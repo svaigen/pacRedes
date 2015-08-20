@@ -16,6 +16,8 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import java.util.HashMap;
+import java.util.Map;
 
 public class App extends ApplicationAdapter {
 
@@ -34,7 +36,7 @@ public class App extends ApplicationAdapter {
     static final int ESTADO_FIM = 4;
 
     static final int VIDAS_INICIAIS = 3;
-    static final int PONTO_DOCE_PEQUENO = 10;
+    static final int PONTO_DOCE = 10;
 
     float velocidade = 2f;
     float w;
@@ -50,11 +52,12 @@ public class App extends ApplicationAdapter {
     TiledMapRenderer tiledMapRenderer;
     MapObjects paredes;
     MapObjects pontosDecisao;
-    TiledMapTileLayer doces;
+    TiledMapTileLayer docesTiled;
     Pacman pacMan;
     Ghost ghosts[] = new Ghost[4];
     BitmapFont font;
     SpriteBatch batch;
+    Map<String, Doce> doces = new HashMap<String, Doce>();
 
     @Override
     public void create() {
@@ -84,7 +87,7 @@ public class App extends ApplicationAdapter {
         switch (estadoJogo) {
             case ESTADO_ABERTURA:
                 if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
-                    inicializaFase1();
+                    carregaNivel("maps/level1.tmx", 2, 3, 1, velocidade, velocidade, geraPosicoesDocesGrandesNivel1());
                     estadoJogo = ESTADO_INICIO;
                 } else {
                     batch.begin();
@@ -105,8 +108,13 @@ public class App extends ApplicationAdapter {
                 andaGhosts(ghosts, paredes, pontosDecisao);
                 pacMan.animate();
                 animaGhosts(ghosts);
-                if (pacMan.colidiuGhosts(ghosts)) {
-                    estadoJogo = ESTADO_PACMAN_MORTO;
+                int idGhost = pacMan.colidiuGhosts(ghosts);
+                if (idGhost != -1) {
+                    if (ghosts[idGhost].isNormal()) {
+                        estadoJogo = ESTADO_PACMAN_MORTO;
+                    } else if(ghosts[idGhost].isVulneravel()){
+                        ghosts[idGhost].estado = Ghost.ESTADO_OLHOS;
+                    }
                 }
                 verificaComeuDoce(pacMan, doces);
                 escreveInformacoes();
@@ -138,7 +146,7 @@ public class App extends ApplicationAdapter {
         batch.begin();
         font.setColor(Color.WHITE);
         font.draw(batch, "Pontos: " + pontos, 0, 20);
-        font.draw(batch, "Vidas: "+pacMan.vidas, 0, 40);
+        font.draw(batch, "Vidas: " + pacMan.vidas, 0, 40);
         batch.end();
     }
 
@@ -229,21 +237,64 @@ public class App extends ApplicationAdapter {
         }
     }
 
-    private void inicializaFase1() {
-        tiledMap = new TmxMapLoader().load("maps/level1.tmx");
+    private void carregaNivel(String caminhoMapa, int indiceParedes,
+            int indicePontosDecisao, int indiceDoces, float velocidadePacMan, float velocidadeGhosts, String[] posicoesDocesGrandes) {
+        tiledMap = new TmxMapLoader().load(caminhoMapa);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-        paredes = tiledMap.getLayers().get(2).getObjects();
-        pontosDecisao = tiledMap.getLayers().get(3).getObjects();
-        doces = (TiledMapTileLayer) tiledMap.getLayers().get(1);
+        paredes = tiledMap.getLayers().get(indiceParedes).getObjects();
+        pontosDecisao = tiledMap.getLayers().get(indicePontosDecisao).getObjects();
+        docesTiled = (TiledMapTileLayer) tiledMap.getLayers().get(indiceDoces);
+        doces = realizaMapeamentoDoces(docesTiled, posicoesDocesGrandes);
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
-        pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade, VIDAS_INICIAIS);
-        inicializaGhosts(ghosts, sprites, velocidade);
+        pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidadePacMan, VIDAS_INICIAIS);
+        inicializaGhosts(ghosts, sprites, velocidadeGhosts);
     }
-    
-    private void verificaComeuDoce(Pacman pacMan, TiledMapTileLayer doces) {
-        if (pacMan.comeuDoce(doces)) {
-            pontos += PONTO_DOCE_PEQUENO;
+
+    private void verificaComeuDoce(Pacman pacMan, Map doces) {
+        int tipoDoce = pacMan.comeDoce(doces);
+        if (tipoDoce != -1) { //se o pacman comeu algum tipo de doce
+            pontos += PONTO_DOCE;
+            if (tipoDoce == 1) {//se foi um doce grande
+                for (Ghost ghost : ghosts) {
+                    ghost.transformaVulneravel();
+                }
+            }
         }
+    }
+
+    private Map<String, Doce> realizaMapeamentoDoces(TiledMapTileLayer docesTiled, String[] posicoesDocesGrandes) {
+        Map<String, Doce> mapeamento = new HashMap<String, Doce>();
+        for (int x = 0; x < 25; x++) {
+            for (int y = 0; y < 25; y++) {
+                if (docesTiled.getCell(x, y) != null) {
+                    String chaveHash = x + "-" + y;
+                    if (isDoceGrande(chaveHash, posicoesDocesGrandes)) {
+                        mapeamento.put(chaveHash, new Doce(x, y, Doce.TIPO_GRANDE, false, docesTiled));
+                    } else {
+                        mapeamento.put(chaveHash, new Doce(x, y, Doce.TIPO_PEQUENO, false, docesTiled));
+                    }
+                }
+            }
+        }
+        return mapeamento;
+    }
+
+    private String[] geraPosicoesDocesGrandesNivel1() {
+        String[] posicoes = new String[4];
+        posicoes[0] = "3-8";
+        posicoes[1] = "21-8";
+        posicoes[2] = "3-18";
+        posicoes[3] = "21-18";
+        return posicoes;
+    }
+
+    private boolean isDoceGrande(String chaveHash, String[] posicoesDocesGrandes) {
+        for (String posicao : posicoesDocesGrandes) {
+            if (posicao.equalsIgnoreCase(chaveHash)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
