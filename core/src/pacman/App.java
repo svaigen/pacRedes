@@ -16,7 +16,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 
 public class App extends ApplicationAdapter {
 
@@ -99,7 +98,7 @@ public class App extends ApplicationAdapter {
                 if (UsuarioIniciaJogo()) {
                     estadoJogo = ESTADO_JOGANDO;
                 }
-                escrevePontos();
+                escreveInformacoes();
                 break;
             case ESTADO_JOGANDO:
                 pacMan.anda(paredes);
@@ -110,7 +109,7 @@ public class App extends ApplicationAdapter {
                     estadoJogo = ESTADO_PACMAN_MORTO;
                 }
                 verificaComeuDoce(pacMan, doces);
-                escrevePontos();
+                escreveInformacoes();
                 break;
             case ESTADO_PACMAN_MORTO:
                 pacMan.animate();
@@ -123,18 +122,23 @@ public class App extends ApplicationAdapter {
                         estadoJogo = ESTADO_INICIO;
                     }
                 }
-                escrevePontos();
+                escreveInformacoes();
                 break;
             case ESTADO_FIM:
+                this.pontos = 0;
+                tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
+                tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+                estadoJogo = ESTADO_ABERTURA;
                 break;
         }
 
     }
 
-    public void escrevePontos() {
+    public void escreveInformacoes() {
         batch.begin();
         font.setColor(Color.WHITE);
         font.draw(batch, "Pontos: " + pontos, 0, 20);
+        font.draw(batch, "Vidas: "+pacMan.vidas, 0, 40);
         batch.end();
     }
 
@@ -230,21 +234,12 @@ public class App extends ApplicationAdapter {
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         paredes = tiledMap.getLayers().get(2).getObjects();
         pontosDecisao = tiledMap.getLayers().get(3).getObjects();
-        //  criaDoces();
-        //    doces = tiledMap.getLayers().get(1).getProperties().getKeys();
         doces = (TiledMapTileLayer) tiledMap.getLayers().get(1);
-        //   criaDoces(doces);
-
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
         pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidade, VIDAS_INICIAIS);
         inicializaGhosts(ghosts, sprites, velocidade);
     }
-
-//    private void criaDoces(MapObjects doces) {
-//        TiledMapTileLayer layer = (TiledMapTileLayer)tiledMap.getLayers().get(0);
-//        layer.getCell(0, 1).setTile(null);
-//
-//    }
+    
     private void verificaComeuDoce(Pacman pacMan, TiledMapTileLayer doces) {
         if (pacMan.comeuDoce(doces)) {
             pontos += PONTO_DOCE_PEQUENO;
