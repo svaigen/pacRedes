@@ -36,8 +36,14 @@ public class App extends ApplicationAdapter {
     static final int ESTADO_FIM = 4;
 
     static final int VIDAS_INICIAIS = 3;
-    static final int PONTO_DOCE = 10;
+    static final int PONTO_DOCE_PEQUENO = 10;
+    static final int PONTO_DOCE_GRANDE = 50;
+    static final int PONTO_GHOST = 250;
+    static final int PONTO_MORRE = -500;
 
+    static final int COORDENADA_BASE_X = 12*24;
+    static final int COORDENADA_BASE_Y = 14*24;
+    
     float velocidade = 2f;
     float w;
     float h;
@@ -111,9 +117,11 @@ public class App extends ApplicationAdapter {
                 int idGhost = pacMan.colidiuGhosts(ghosts);
                 if (idGhost != -1) {
                     if (ghosts[idGhost].isNormal()) {
+                        pontos += PONTO_MORRE;
                         estadoJogo = ESTADO_PACMAN_MORTO;
-                    } else if(ghosts[idGhost].isVulneravel()){
+                    } else if (ghosts[idGhost].isVulneravel()) {
                         ghosts[idGhost].estado = Ghost.ESTADO_OLHOS;
+                        pontos += PONTO_GHOST;
                     }
                 }
                 verificaComeuDoce(pacMan, doces);
@@ -253,11 +261,13 @@ public class App extends ApplicationAdapter {
     private void verificaComeuDoce(Pacman pacMan, Map doces) {
         int tipoDoce = pacMan.comeDoce(doces);
         if (tipoDoce != -1) { //se o pacman comeu algum tipo de doce
-            pontos += PONTO_DOCE;
             if (tipoDoce == 1) {//se foi um doce grande
                 for (Ghost ghost : ghosts) {
                     ghost.transformaVulneravel();
+                    pontos+= PONTO_DOCE_GRANDE;
                 }
+            } else {
+                pontos += PONTO_DOCE_PEQUENO;
             }
         }
     }

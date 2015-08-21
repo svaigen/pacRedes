@@ -7,6 +7,7 @@ import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Ghost {
@@ -50,16 +51,21 @@ public class Ghost {
 
     public void anda(MapObjects paredes, MapObjects pontosColisao) {
         if (this.tempoParaFicarLivre == 0) {
-            if (this.estado == ESTADO_PRESO) {
-                this.personagem.setPosition(12 * 24, 14 * 24);
-                this.estado = this.tempoParaInvulneravel == 0 ? ESTADO_NORMAL : ESTADO_VULNERAVEL;
+            if (this.estado == ESTADO_OLHOS && estaEmPontoColisao(pontosColisao)) {
+                escolheDirecaoParaObjetivo(App.COORDENADA_BASE_X, App.COORDENADA_BASE_Y, paredes);
+            } else {
+                if (this.estado == ESTADO_PRESO) {
+                    this.personagem.setPosition(12 * 24, 14 * 24);
+                    this.estado = this.tempoParaInvulneravel == 0 ? ESTADO_NORMAL : ESTADO_VULNERAVEL;
+                }
+                if (colidiuParedes(paredes, direcao) || direcao == App.PARADO || estaEmPontoColisao(pontosColisao)) {
+                    int direcaoAnterior = direcao;
+                    do {
+                        direcao = new Random().nextInt(4);
+                    } while (colidiuParedes(paredes, direcao) || (Math.abs(direcao - direcaoAnterior) == 2));
+                }
             }
-            if (colidiuParedes(paredes, direcao) || direcao == App.PARADO || estaEmPontoColisao(pontosColisao)) {
-                int direcaoAnterior = direcao;
-                do {
-                    direcao = new Random().nextInt(4);
-                } while (colidiuParedes(paredes, direcao) || (Math.abs(direcao - direcaoAnterior) == 2));
-            }
+
             switch (direcao) {
                 case App.ESQUERDA:
                     if (!colidiuParedes(paredes, App.ESQUERDA)) {
@@ -157,8 +163,11 @@ public class Ghost {
                 break;
         }
         Rectangle r = new Rectangle(x, y, this.personagem.getWidth(), this.personagem.getHeight());
-        for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class)) {
+
+        for (RectangleMapObject rectangleObject : objects.getByType(RectangleMapObject.class
+        )) {
             Rectangle rectangle = rectangleObject.getRectangle();
+
             if (Intersector.overlaps(rectangle, r)) {
                 return true;
             }
@@ -168,8 +177,11 @@ public class Ghost {
 
     public boolean estaEmPontoColisao(MapObjects pontosColisao) {
         Rectangle rGhost = new Rectangle(this.personagem.getX(), this.personagem.getY(), this.personagem.getWidth(), this.personagem.getHeight());
-        for (RectangleMapObject rectangleObject : pontosColisao.getByType(RectangleMapObject.class)) {
+
+        for (RectangleMapObject rectangleObject : pontosColisao.getByType(RectangleMapObject.class
+        )) {
             Rectangle rectangle = rectangleObject.getRectangle();
+
             if (rectangle.equals(rGhost)) {
                 return true;
             }
@@ -182,12 +194,41 @@ public class Ghost {
         this.tempoParaInvulneravel = TEMPO_VULNERAVEL;
         this.delay = DELAY_MAX;
     }
-    
-    boolean isVulneravel(){
+
+    boolean isVulneravel() {
         return this.estado == ESTADO_VULNERAVEL;
     }
-    
-    boolean isNormal(){
+
+    boolean isNormal() {
         return this.estado == ESTADO_NORMAL;
+    }
+
+    private void escolheDirecaoParaObjetivo(int x, int y, MapObjects paredes) {        
+        ArrayList<Integer> direcoes = new ArrayList();
+        int movEsquerda = (int) Math.sqrt(Math.pow(((this.personagem.getX() - this.velocidade) - x), 2) + Math.pow(this.personagem.getY() - y, 2));
+        int movCima = (int) Math.sqrt(Math.pow((this.personagem.getX() - x), 2) + Math.pow(this.personagem.getY() + velocidade - y, 2));
+        int movDireita = (int) Math.sqrt(Math.pow((this.personagem.getX() + velocidade) - x,2) + Math.pow(this.personagem.getY() - y, 2));
+        int movBaixo = (int) Math.sqrt(Math.pow((this.personagem.getX()) - x,2) + Math.pow(this.personagem.getY() - velocidade - y, 2));        
+        direcoes.add(movEsquerda);
+        direcoes.add(movCima);
+        direcoes.add(movDireita);
+        direcoes.add(movBaixo);
+        boolean escolheu = false;
+        int melhorDirecao = -1;
+        do {
+            int menorMov = Integer.MAX_VALUE;
+            for (int i = 0; i < direcoes.size(); i++) {
+                if (direcoes.get(i) < menorMov) {
+                    menorMov = direcoes.get(i);
+                    melhorDirecao = i;
+                }
+            }
+            if (!colidiuParedes(paredes, melhorDirecao)) {
+                escolheu = true;          
+                this.direcao = melhorDirecao;
+            } else {
+                direcoes.set(melhorDirecao, Integer.MAX_VALUE);
+            }
+        } while (!escolheu);
     }
 }
