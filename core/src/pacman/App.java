@@ -180,6 +180,7 @@ public class App extends ApplicationAdapter {
                 break;
             case ESTADO_FIM:
                 this.pontos = 0;
+                this.nivel = 1;
                 tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
                 tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
                 estadoJogo = ESTADO_ABERTURA;
