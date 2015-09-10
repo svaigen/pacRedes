@@ -30,12 +30,17 @@ public class Ghost {
     protected SpriteBatch batch;
     protected int tempoParaFicarLivre;
     protected int tempoParaInvulneravel;
+    protected boolean seguePacMan;
 
-    public Ghost(float x, float y, TextureRegion[] sprites, float velocidade, int ghostId) {
+    public Ghost(float x, float y, TextureRegion[] sprites, float velocidade, int ghostId, boolean segue, int nivel) {
         frames = sprites;
         this.velocidade = velocidade;
         this.batch = new SpriteBatch();
         this.init(x, y, ghostId);
+        seguePacMan = segue;
+        if (seguePacMan && nivel==3){
+            this.velocidade -= 1f;
+        }
     }
 
     public void init(float x, float y, int ghostId) {
@@ -49,10 +54,12 @@ public class Ghost {
         this.delay = DELAY_MAX;
     }
 
-    public void anda(MapObjects paredes, MapObjects pontosColisao) {
+    public void anda(MapObjects paredes, MapObjects pontosColisao, float x, float y) {
         if (this.tempoParaFicarLivre == 0) {
             if (this.estado == ESTADO_OLHOS && estaEmPontoColisao(pontosColisao)) {
-                escolheDirecaoParaObjetivo(App.COORDENADA_BASE_X, App.COORDENADA_BASE_Y, paredes);
+                escolheDirecaoParaObjetivo(x, y, paredes);
+            } else if (this.seguePacMan && this.estado != ESTADO_VULNERAVEL && estaEmPontoColisao(pontosColisao)) {
+                escolheDirecaoParaObjetivo(x, y, paredes);
             } else {
                 if (this.estado == ESTADO_PRESO) {
                     this.personagem.setPosition(12 * 24, 14 * 24);
@@ -128,6 +135,9 @@ public class Ghost {
                 }
                 break;
             case ESTADO_OLHOS:
+                if (this.personagem.getX() == (12 * 24) && this.personagem.getY() == (14 * 24)) {
+                    this.estado = ESTADO_NORMAL;
+                }
                 this.frameAtual = this.direcao + 7;
                 this.personagem.setRegion(frames[frameAtual]);
                 break;
@@ -203,12 +213,12 @@ public class Ghost {
         return this.estado == ESTADO_NORMAL;
     }
 
-    private void escolheDirecaoParaObjetivo(int x, int y, MapObjects paredes) {        
+    private void escolheDirecaoParaObjetivo(float x, float y, MapObjects paredes) {
         ArrayList<Integer> direcoes = new ArrayList();
         int movEsquerda = (int) Math.sqrt(Math.pow(((this.personagem.getX() - this.velocidade) - x), 2) + Math.pow(this.personagem.getY() - y, 2));
         int movCima = (int) Math.sqrt(Math.pow((this.personagem.getX() - x), 2) + Math.pow(this.personagem.getY() + velocidade - y, 2));
-        int movDireita = (int) Math.sqrt(Math.pow((this.personagem.getX() + velocidade) - x,2) + Math.pow(this.personagem.getY() - y, 2));
-        int movBaixo = (int) Math.sqrt(Math.pow((this.personagem.getX()) - x,2) + Math.pow(this.personagem.getY() - velocidade - y, 2));        
+        int movDireita = (int) Math.sqrt(Math.pow((this.personagem.getX() + velocidade) - x, 2) + Math.pow(this.personagem.getY() - y, 2));
+        int movBaixo = (int) Math.sqrt(Math.pow((this.personagem.getX()) - x, 2) + Math.pow(this.personagem.getY() - velocidade - y, 2));
         direcoes.add(movEsquerda);
         direcoes.add(movCima);
         direcoes.add(movDireita);
@@ -224,11 +234,17 @@ public class Ghost {
                 }
             }
             if (!colidiuParedes(paredes, melhorDirecao)) {
-                escolheu = true;          
+                escolheu = true;
                 this.direcao = melhorDirecao;
             } else {
                 direcoes.set(melhorDirecao, Integer.MAX_VALUE);
             }
         } while (!escolheu);
     }
+
+    public boolean isSeguidorPacMan() {
+        return seguePacMan;
+    }
+    
+    
 }

@@ -18,6 +18,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 
 public class App extends ApplicationAdapter {
 
@@ -34,23 +35,27 @@ public class App extends ApplicationAdapter {
     static final int ESTADO_JOGANDO = 2;
     static final int ESTADO_PACMAN_MORTO = 3;
     static final int ESTADO_FIM = 4;
+    static final int ESTADO_NIVEL_COMPLETO = 5;
 
     static final int VIDAS_INICIAIS = 3;
     static final int PONTO_DOCE_PEQUENO = 10;
     static final int PONTO_DOCE_GRANDE = 50;
     static final int PONTO_GHOST = 250;
     static final int PONTO_MORRE = -500;
+    static final int PONTO_FRUTA = 500;
 
-    static final int COORDENADA_BASE_X = 12*24;
-    static final int COORDENADA_BASE_Y = 14*24;
-    
-    float velocidade = 2f;
+    static final int COORDENADA_BASE_GHOST_X = 12 * 24;
+    static final int COORDENADA_BASE_GHOST_Y = 14 * 24;
+
+    float velocidadePac;
+    float velocidadeGhost;
     float w;
     float h;
     int pontos;
 
     int estadoJogo;
     int nivel;
+    int docesRestantes;
     Texture sprites;
     TextureRegion frames[];
     TiledMap tiledMap;
@@ -61,9 +66,11 @@ public class App extends ApplicationAdapter {
     TiledMapTileLayer docesTiled;
     Pacman pacMan;
     Ghost ghosts[] = new Ghost[4];
+    Fruta fruta;
     BitmapFont font;
     SpriteBatch batch;
     Map<String, Doce> doces = new HashMap<String, Doce>();
+    long inicio, fim, tempo;
 
     @Override
     public void create() {
@@ -79,6 +86,7 @@ public class App extends ApplicationAdapter {
         w = Gdx.graphics.getWidth();
         h = Gdx.graphics.getHeight();
         pontos = 0;
+        tempo = 0;
     }
 
     @Override
@@ -89,11 +97,12 @@ public class App extends ApplicationAdapter {
         camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
-
         switch (estadoJogo) {
             case ESTADO_ABERTURA:
+                velocidadePac = 2f;
+                velocidadeGhost = 2f;
                 if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
-                    carregaNivel("maps/level1.tmx", 2, 3, 1, velocidade, velocidade, geraPosicoesDocesGrandesNivel1());
+                    carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 0);
                     estadoJogo = ESTADO_INICIO;
                 } else {
                     batch.begin();
@@ -110,10 +119,14 @@ public class App extends ApplicationAdapter {
                 escreveInformacoes();
                 break;
             case ESTADO_JOGANDO:
+                inicio = System.currentTimeMillis();
+                fruta.animate();
                 pacMan.anda(paredes);
                 andaGhosts(ghosts, paredes, pontosDecisao);
                 pacMan.animate();
                 animaGhosts(ghosts);
+
+                /*Verficacao de colisao do pacman com fantasmas*/
                 int idGhost = pacMan.colidiuGhosts(ghosts);
                 if (idGhost != -1) {
                     if (ghosts[idGhost].isNormal()) {
@@ -124,10 +137,18 @@ public class App extends ApplicationAdapter {
                         pontos += PONTO_GHOST;
                     }
                 }
+
                 verificaComeuDoce(pacMan, doces);
+
+                if (fruta.foiComida(pacMan)) {
+                    pontos += PONTO_FRUTA;
+                }
                 escreveInformacoes();
+                fim = System.currentTimeMillis();
+                tempo+= (fim - inicio);
                 break;
             case ESTADO_PACMAN_MORTO:
+                fruta.reiniciaProbabilidade();
                 pacMan.animate();
                 animaGhosts(ghosts);
                 if (pacMan.terminouAnimacaoMorte()) {
@@ -140,6 +161,23 @@ public class App extends ApplicationAdapter {
                 }
                 escreveInformacoes();
                 break;
+            case ESTADO_NIVEL_COMPLETO:
+                nivel++;
+                switch (nivel) {
+                    case 2:
+                        carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
+                        estadoJogo = ESTADO_INICIO;
+                        break;
+                    case 3:
+                        velocidadeGhost = 3f;
+                        velocidadePac = velocidadeGhost;
+                        carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
+                        estadoJogo = ESTADO_INICIO;
+                        break;
+                    default:
+                        estadoJogo = ESTADO_FIM;
+                }
+                break;
             case ESTADO_FIM:
                 this.pontos = 0;
                 tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
@@ -147,14 +185,15 @@ public class App extends ApplicationAdapter {
                 estadoJogo = ESTADO_ABERTURA;
                 break;
         }
-
     }
 
     public void escreveInformacoes() {
         batch.begin();
         font.setColor(Color.WHITE);
-        font.draw(batch, "Pontos: " + pontos, 0, 20);
-        font.draw(batch, "Vidas: " + pacMan.vidas, 0, 40);
+        font.draw(batch, "Pontos: " + pontos, 10, 20);
+        font.draw(batch, "Vidas: " + pacMan.vidas, 10, 40);
+        font.draw(batch, "Nível " + nivel, 10, 60);
+        font.draw(batch, "Tempo " + tempo/10, 450, 20);
         batch.end();
     }
 
@@ -173,7 +212,7 @@ public class App extends ApplicationAdapter {
         return frames;
     }
 
-    private void inicializaGhosts(Ghost[] ghosts, Texture sprites, float velocidade) {
+    private void inicializaGhosts(Ghost[] ghosts, Texture sprites, float velocidade, int numSeguidoresPac) {
         int offset = 20; //deslocamento para iniciar os frames dos ghosts em estado normal
         for (int i = 0; i < ghosts.length; i++) {
             TextureRegion frames[] = new TextureRegion[11];
@@ -193,7 +232,7 @@ public class App extends ApplicationAdapter {
                 x = 12 * 24;
                 y = 14 * 24;
             }
-            ghosts[i] = new Ghost(x, y, frames, velocidade, i);
+            ghosts[i] = new Ghost(x, y, frames, velocidade, i, (numSeguidoresPac--) > 0, nivel);
         }
     }
 
@@ -205,7 +244,11 @@ public class App extends ApplicationAdapter {
 
     private void andaGhosts(Ghost[] ghosts, MapObjects paredes, MapObjects pontosDecisao) {
         for (Ghost ghost : ghosts) {
-            ghost.anda(paredes, pontosDecisao);
+            if (ghost.isSeguidorPacMan() && ghost.isNormal()) {
+                ghost.anda(paredes, pontosDecisao, pacMan.personagem.getX(), pacMan.personagem.getY());
+            } else {
+                ghost.anda(paredes, pontosDecisao, COORDENADA_BASE_GHOST_X, COORDENADA_BASE_GHOST_Y);
+            }
         }
     }
 
@@ -246,7 +289,8 @@ public class App extends ApplicationAdapter {
     }
 
     private void carregaNivel(String caminhoMapa, int indiceParedes,
-            int indicePontosDecisao, int indiceDoces, float velocidadePacMan, float velocidadeGhosts, String[] posicoesDocesGrandes) {
+            int indicePontosDecisao, int indiceDoces, float velocidadePacMan,
+            float velocidadeGhosts, String[] posicoesDocesGrandes, int numGhostsSeguemPac) {
         tiledMap = new TmxMapLoader().load(caminhoMapa);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         paredes = tiledMap.getLayers().get(indiceParedes).getObjects();
@@ -255,7 +299,9 @@ public class App extends ApplicationAdapter {
         doces = realizaMapeamentoDoces(docesTiled, posicoesDocesGrandes);
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
         pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidadePacMan, VIDAS_INICIAIS);
-        inicializaGhosts(ghosts, sprites, velocidadeGhosts);
+        fruta = new Fruta(w, h, new TextureRegion(sprites, 46 * 24, 0, 24, 24));
+        docesRestantes = 236;
+        inicializaGhosts(ghosts, sprites, velocidadeGhosts, numGhostsSeguemPac);
     }
 
     private void verificaComeuDoce(Pacman pacMan, Map doces) {
@@ -264,10 +310,14 @@ public class App extends ApplicationAdapter {
             if (tipoDoce == 1) {//se foi um doce grande
                 for (Ghost ghost : ghosts) {
                     ghost.transformaVulneravel();
-                    pontos+= PONTO_DOCE_GRANDE;
+                    pontos += PONTO_DOCE_GRANDE;
                 }
             } else {
                 pontos += PONTO_DOCE_PEQUENO;
+            }
+            docesRestantes--;
+            if (docesRestantes == 0) {
+                estadoJogo = ESTADO_NIVEL_COMPLETO;
             }
         }
     }
@@ -289,7 +339,7 @@ public class App extends ApplicationAdapter {
         return mapeamento;
     }
 
-    private String[] geraPosicoesDocesGrandesNivel1() {
+    private String[] geraPosicoesDocesGrandes() {
         String[] posicoes = new String[4];
         posicoes[0] = "3-8";
         posicoes[1] = "21-8";
