@@ -165,13 +165,13 @@ public class App extends ApplicationAdapter {
                 nivel++;
                 switch (nivel) {
                     case 2:
-                        carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
+                        carregaNivel("maps/level2.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
                         estadoJogo = ESTADO_INICIO;
                         break;
                     case 3:
                         velocidadeGhost = 3f;
                         velocidadePac = velocidadeGhost;
-                        carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
+                        carregaNivel("maps/level3.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
                         estadoJogo = ESTADO_INICIO;
                         break;
                     default:
