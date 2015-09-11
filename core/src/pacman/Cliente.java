@@ -41,6 +41,8 @@ public class Cliente {
 
     public void fechaConexao() {
         try {
+            String n = this.enviaInformacao("/q");
+            System.out.println(n);
             socket.close();
         } catch (Exception e) {
             System.err.println("Erro ao fechar conexão");
@@ -51,7 +53,7 @@ public class Cliente {
         Cliente c = new Cliente(50001);
         String n;
         for (int i = 0; i < 3; i++) {
-            n = new Scanner(System.in).next();
+            n = "n"+i;
             n = c.enviaInformacao(n);
             System.out.println(n);
         }
