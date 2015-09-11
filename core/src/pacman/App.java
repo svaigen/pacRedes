@@ -25,9 +25,9 @@ public class App extends ApplicationAdapter {
     static final int NUM_FRAMES_TOTAL = 49;
     static final int NUM_FRAMES_PACMAN = 20;
     static final int ESQUERDA = 0;
+    static final int CIMA = 1;
     static final int DIREITA = 2;
     static final int BAIXO = 3;
-    static final int CIMA = 1;
     static final int PARADO = 4;
 
     static final int ESTADO_ABERTURA = 0;

@@ -20,7 +20,7 @@ public class Pacman {
     static final int DELAY_MAX = 10;
     protected Sprite personagem;
     protected TextureRegion frames[];
-    protected boolean alive;
+    protected boolean vivo;
     protected int frameAtual;
     protected int direcaoAtual;
     protected int direcaoPretendida;
@@ -40,7 +40,7 @@ public class Pacman {
     public void init(float width, float height) {
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(width / 2 - this.personagem.getWidth() / 2, (height / 2 - this.personagem.getHeight() / 2) - 48);
-        this.alive = true;
+        this.vivo = true;
         this.frameAtual = 0;
         this.direcaoAtual = App.PARADO;
         this.direcaoPretendida = App.PARADO;
@@ -49,7 +49,7 @@ public class Pacman {
     }
 
     public void animate() {
-        if (alive && this.direcaoAtual != App.PARADO) {
+        if (vivo && this.direcaoAtual != App.PARADO) {
             if (this.delay == 0) {
                 if ((this.frameAtual % 2) == 0) {
                     this.frameAtual = (this.direcaoAtual * 2) + 1;
@@ -61,7 +61,7 @@ public class Pacman {
             } else {
                 this.delay--;
             }
-        } else if (!alive) {
+        } else if (!vivo) {
             if (this.delay == 0) {
                 if (this.frameAtual < 19) {
                     this.frameAtual++;
@@ -159,7 +159,7 @@ public class Pacman {
                     ghosts[i].personagem.getWidth(), ghosts[i].personagem.getHeight());
             if (Intersector.overlaps(rGhost, rPac)) {
                 if (ghosts[i].isNormal()) {
-                    this.alive = false;
+                    this.vivo = false;
                     this.delay = DELAY_MAX;
                     this.frameAtual = 8;
                     this.personagem.setRegion(frames[frameAtual]);

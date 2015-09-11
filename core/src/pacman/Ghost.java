@@ -54,18 +54,18 @@ public class Ghost {
         this.delay = DELAY_MAX;
     }
 
-    public void anda(MapObjects paredes, MapObjects pontosColisao, float x, float y) {
+    public void anda(MapObjects paredes, MapObjects pontosDecisao, float x, float y) {
         if (this.tempoParaFicarLivre == 0) {
-            if (this.estado == ESTADO_OLHOS && estaEmPontoColisao(pontosColisao)) {
+            if (this.estado == ESTADO_OLHOS && estaEmPontoDecisao(pontosDecisao)) {
                 escolheDirecaoParaObjetivo(x, y, paredes);
-            } else if (this.seguePacMan && this.estado != ESTADO_VULNERAVEL && estaEmPontoColisao(pontosColisao)) {
+            } else if (this.seguePacMan && this.estado != ESTADO_VULNERAVEL && estaEmPontoDecisao(pontosDecisao)) {
                 escolheDirecaoParaObjetivo(x, y, paredes);
             } else {
                 if (this.estado == ESTADO_PRESO) {
                     this.personagem.setPosition(12 * 24, 14 * 24);
                     this.estado = this.tempoParaInvulneravel == 0 ? ESTADO_NORMAL : ESTADO_VULNERAVEL;
                 }
-                if (colidiuParedes(paredes, direcao) || direcao == App.PARADO || estaEmPontoColisao(pontosColisao)) {
+                if (colidiuParedes(paredes, direcao) || direcao == App.PARADO || estaEmPontoDecisao(pontosDecisao)) {
                     int direcaoAnterior = direcao;
                     do {
                         direcao = new Random().nextInt(4);
@@ -185,7 +185,7 @@ public class Ghost {
         return false;
     }
 
-    public boolean estaEmPontoColisao(MapObjects pontosColisao) {
+    public boolean estaEmPontoDecisao(MapObjects pontosColisao) {
         Rectangle rGhost = new Rectangle(this.personagem.getX(), this.personagem.getY(), this.personagem.getWidth(), this.personagem.getHeight());
 
         for (RectangleMapObject rectangleObject : pontosColisao.getByType(RectangleMapObject.class
