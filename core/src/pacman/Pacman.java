@@ -37,6 +37,20 @@ public class Pacman {
 
     }
 
+    Pacman(float velocidade, int vidas, int vivo, int dirAtual, int dirPret, int x, int y, TextureRegion[] sprites) {
+        frames = sprites;
+        this.velocidade = velocidade;
+        this.vidas = vidas;
+        this.personagem = new Sprite(frames[0]);
+        this.personagem.setPosition(x, y);
+        this.vivo = true;
+        this.frameAtual = 0;
+        this.direcaoAtual = dirAtual;
+        this.direcaoPretendida = dirPret;
+        this.delay = DELAY_MAX;
+        this.batch = new SpriteBatch();
+    }
+
     public void init(float width, float height) {
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(width / 2 - this.personagem.getWidth() / 2, (height / 2 - this.personagem.getHeight() / 2) - 48);

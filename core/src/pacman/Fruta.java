@@ -23,6 +23,14 @@ public class Fruta {
         probabilidade = FATOR_PROBABILIDADE;
     }
 
+    public Fruta(int visivel, float probabilidade, int x, int y, TextureRegion sprite) {
+        this.visivel = visivel==1;
+        this.probabilidade = probabilidade;
+        this.sprite = new Sprite(sprite);
+        this.sprite.setPosition(x, y);
+        batch = new SpriteBatch();
+    }
+
     public void animate() {
         calculaProbabilidadefruta();
         if (visivel) {

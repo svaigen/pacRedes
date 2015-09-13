@@ -1,13 +1,16 @@
 package pacman;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import static pacman.App.tiledMap;
 
 public class Cliente {
 
@@ -15,9 +18,22 @@ public class Cliente {
     Socket socket;
     PrintStream ps;
     BufferedReader br;
+    protected byte estadoJogo;
+    protected byte nivel;
+    protected int pontos;
+    protected int tempo;
+    protected String caminhoTiledMap;
+    protected String caminhoSprites;
+    protected byte indiceParedes;
+    protected byte indicePontosDecisao;
+    protected byte indiceDoces;
+    protected Pacman pacMan;
+    protected Fruta fruta;
+    protected Ghost ghosts[] = new Ghost[4];
+    protected int docesRestantes;
 
-    public Cliente(int porta) {
-        this.porta = porta;
+    public Cliente() {
+        this.porta = 50001;
         try {
             socket = new Socket("127.0.0.1", porta);
             ps = new PrintStream(socket.getOutputStream());
@@ -48,17 +64,128 @@ public class Cliente {
             System.err.println("Erro ao fechar conexão");
         }
     }
-    
-    public static void main(String[] args) {
-        Cliente c = new Cliente(50001);
-        String n;
-        for (int i = 0; i < 3; i++) {
-            n = "n"+i;
-            n = c.enviaInformacao(n);
-            System.out.println(n);
+    /*
+     public static void main(String[] args) {
+     Cliente c = new Cliente();
+     String n;
+     for (int i = 0; i < 3; i++) {
+     n = "n"+i;
+     n = c.enviaInformacao(n);
+     System.out.println(n);
+     }
+     c.fechaConexao();
+     }
+     */
+
+    private String enviaOperacao(int op, String envio) {
+        String resposta = "";
+        String operacao;
+        try {
+            ps.print(envio);
+            resposta = br.readLine();
+            System.out.println(resposta);
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar/receber operacao " + op + "!");
+        } finally {
+            operacao = resposta.substring(0, 3);
         }
-        c.fechaConexao();
+        return resposta;
     }
-    
+
+    public void estabeleceConexao() {
+        String envio;
+        String resposta = "";
+        envio = "001\n\0";//operacao
+        resposta = enviaOperacao(1, envio);
+        String dados[] = resposta.substring(3).split("#");
+
+        estadoJogo = Byte.parseByte(dados[0]);
+        nivel = Byte.parseByte(dados[1]);
+        pontos = Integer.parseInt(dados[2]);
+        tempo = Integer.parseInt(dados[3]);
+        caminhoSprites = dados[4];
+        caminhoTiledMap = dados[5];
+    }
+
+    void carregaNivel(int nivel) {
+        String envio = "002" + nivel + "\n\0";
+        String resposta = enviaOperacao(2, envio);
+        String dados[] = resposta.substring(3).split("#");
+        this.nivel = Byte.parseByte(dados[0]);
+
+        caminhoTiledMap = dados[1];
+        indiceParedes = Byte.parseByte(dados[2]);
+        indicePontosDecisao = Byte.parseByte(dados[3]);
+        indiceDoces = Byte.parseByte(dados[4]);
+        App.tiledMap = new TmxMapLoader().load(caminhoTiledMap);
+        App.tiledMapRenderer = new OrthogonalTiledMapRenderer(App.tiledMap);
+        App.paredes = tiledMap.getLayers().get(indiceParedes).getObjects();
+        App.pontosDecisao = tiledMap.getLayers().get(indicePontosDecisao).getObjects();
+        App.docesTiled = (TiledMapTileLayer) tiledMap.getLayers().get(indiceDoces);
+        App.doces = App.realizaMapeamentoDoces(App.docesTiled, App.geraPosicoesDocesGrandes());
+        App.sprites = new Texture(Gdx.files.internal(caminhoSprites));
+        initPacMan(dados);
+        initFruta(dados);
+        docesRestantes = Integer.parseInt(dados[16]);
+        initGhosts(dados);
+    }
+
+    private void initPacMan(String[] dados) throws NumberFormatException {
+        pacMan = new Pacman(Float.parseFloat(dados[5]), //velocidade
+                Integer.parseInt(dados[6]), //vidas
+                Integer.parseInt(dados[7]), //vivo
+                Integer.parseInt(dados[8]), //direcao atual
+                Integer.parseInt(dados[9]), //direcao pretendida
+                Integer.parseInt(dados[10]), //coord. x
+                Integer.parseInt(dados[11]),//coord. y
+                geraSpritesPacMan(App.sprites, App.NUM_FRAMES_PACMAN));
+    }
+
+    private TextureRegion[] geraSpritesPacMan(Texture sprites, int numFrames) {
+        TextureRegion frames[] = new TextureRegion[numFrames];
+        for (int i = 0; i < numFrames; i++) {
+            frames[i] = new TextureRegion(sprites, i * 24, 0, 24, 24);
+        }
+        return frames;
+    }
+
+    private void initGhosts(String[] dados) {
+        //indice inicia em 17
+        for (int i = 0; i < 4; i++) {
+            int deslocamento = i * 8;
+            ghosts[i] = new Ghost(Integer.parseInt(dados[17 + deslocamento]), //estado
+                    Integer.parseInt(dados[18 + deslocamento]), //durecai
+                    Float.parseFloat(dados[19 + deslocamento]), //velocidade
+                    Integer.parseInt(dados[20 + deslocamento]),//tempolivre
+                    Integer.parseInt(dados[21 + deslocamento]),//tempoinvuln.
+                    Integer.parseInt(dados[22 + deslocamento]),//seguepac
+                    Integer.parseInt(dados[23 + deslocamento]),//x
+                    Integer.parseInt(dados[24 + deslocamento]),//y
+                    geraSpritesGhost(i, App.sprites));//sprites
+        }
+
+    }
+
+    private void initFruta(String[] dados) {
+        //indice de dados inicia em 12
+        fruta = new Fruta(Integer.parseInt(dados[12]),
+                Float.parseFloat(dados[13]),
+                Integer.parseInt(dados[14]),
+                Integer.parseInt(dados[15]),
+                new TextureRegion(App.sprites, 46 * 24, 0, 24, 24));
+    }
+
+    private TextureRegion[] geraSpritesGhost(int i, Texture sprites) {
+        int offset = 20 + (5 * i); //deslocamento para iniciar os frames dos ghosts em estado normal
+        TextureRegion frames[] = new TextureRegion[11];
+        for (int j = 0; j < 5; j++) { //5 = frames do ghost no estado normal
+            frames[j] = new TextureRegion(sprites, (offset++ * 24), 0, 24, 24);
+        }
+        int offsetComum = 40;
+        for (int j = 5; j < 11; j++) {
+            frames[j] = new TextureRegion(sprites, (offsetComum++ * 24), 0, 24, 24);
+        }
+        return frames;
+    }
 
 }

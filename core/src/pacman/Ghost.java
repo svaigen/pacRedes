@@ -43,6 +43,22 @@ public class Ghost {
         }
     }
 
+    Ghost(int estado, int direcao, float velocidade, int tempoSerLivre,
+            int tempoInvulneravel, int seguePacMan, int x, int y, TextureRegion[] sprites) {
+        frames = sprites;
+        this.velocidade = velocidade;
+        this.batch = new SpriteBatch();
+        this.personagem = new Sprite(frames[0]);
+        this.personagem.setPosition(x, y);
+        this.estado = estado;
+        this.frameAtual = 0;
+        this.direcao = direcao;
+        this.tempoParaFicarLivre = tempoSerLivre;
+        this.tempoParaInvulneravel = tempoInvulneravel;
+        this.delay = DELAY_MAX;
+        this.seguePacMan = seguePacMan == 1;
+    }
+
     public void init(float x, float y, int ghostId) {
         this.personagem = new Sprite(frames[0]);
         this.personagem.setPosition(x, y);

@@ -46,47 +46,46 @@ public class App extends ApplicationAdapter {
 
     static final int COORDENADA_BASE_GHOST_X = 12 * 24;
     static final int COORDENADA_BASE_GHOST_Y = 14 * 24;
+    
+    Cliente cliente = new Cliente();
 
     float velocidadePac;
     float velocidadeGhost;
     float w;
     float h;
-    int pontos;
 
-    int estadoJogo;
-    int nivel;
     int docesRestantes;
-    Texture sprites;
-    TextureRegion frames[];
-    TiledMap tiledMap;
+    static Texture sprites;
+    static TextureRegion frames[];
+    static TiledMap tiledMap;
     OrthographicCamera camera;
-    TiledMapRenderer tiledMapRenderer;
-    MapObjects paredes;
-    MapObjects pontosDecisao;
-    TiledMapTileLayer docesTiled;
-    Pacman pacMan;
-    Ghost ghosts[] = new Ghost[4];
-    Fruta fruta;
+    static TiledMapRenderer tiledMapRenderer;
+    static MapObjects paredes;
+    static MapObjects pontosDecisao;
+    static TiledMapTileLayer docesTiled;
     BitmapFont font;
     SpriteBatch batch;
-    Map<String, Doce> doces = new HashMap<String, Doce>();
-    long inicio, fim, tempo;
+    static Map<String, Doce> doces = new HashMap<String, Doce>();
+    long inicio, fim;
 
     @Override
     public void create() {
-        estadoJogo = ESTADO_ABERTURA;
-        nivel = 1;
+        /*Estabelecimento de conexao e obtencao de dados iniciais*/
+        cliente.estabeleceConexao();
+        tiledMap = new TmxMapLoader().load(cliente.caminhoTiledMap);
+        /*----------------------------------------------------------*/
+        
+        /*Inicializacao de ferramentas da biblioteca LibGDX, para
+        iniciar a renderizacão do jogo*/
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 600, 600);
         camera.update();
-        tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
         font = new BitmapFont();
         tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
         batch = new SpriteBatch();
         w = Gdx.graphics.getWidth();
         h = Gdx.graphics.getHeight();
-        pontos = 0;
-        tempo = 0;
+        /*-------------------------------------------------*/
     }
 
     @Override
@@ -97,13 +96,14 @@ public class App extends ApplicationAdapter {
         camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
-        switch (estadoJogo) {
+        switch (cliente.estadoJogo) {
             case ESTADO_ABERTURA:
                 velocidadePac = 2f;
                 velocidadeGhost = 2f;
                 if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
-                    carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 0);
-                    estadoJogo = ESTADO_INICIO;
+                    cliente.carregaNivel(cliente.nivel);
+                    //carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 0);
+                    cliente.estadoJogo = ESTADO_INICIO;
                 } else {
                     batch.begin();
                     font.draw(batch, "Aperte qualquer tecla para começar", 180, 150);
@@ -111,79 +111,79 @@ public class App extends ApplicationAdapter {
                 }
                 break;
             case ESTADO_INICIO:
-                pacMan.animate();
-                animaGhosts(ghosts);
+                cliente.pacMan.animate();
+                animaGhosts(cliente.ghosts);
                 if (UsuarioIniciaJogo()) {
-                    estadoJogo = ESTADO_JOGANDO;
+                    cliente.estadoJogo = ESTADO_JOGANDO;
                 }
                 escreveInformacoes();
                 break;
             case ESTADO_JOGANDO:
                 inicio = System.currentTimeMillis();
-                fruta.animate();
-                pacMan.anda(paredes);
-                andaGhosts(ghosts, paredes, pontosDecisao);
-                pacMan.animate();
-                animaGhosts(ghosts);
+                cliente.fruta.animate();
+                cliente.pacMan.anda(paredes);
+                andaGhosts(cliente.ghosts, paredes, pontosDecisao);
+                cliente.pacMan.animate();
+                animaGhosts(cliente.ghosts);
 
                 /*Verficacao de colisao do pacman com fantasmas*/
-                int idGhost = pacMan.colidiuGhosts(ghosts);
+                int idGhost = cliente.pacMan.colidiuGhosts(cliente.ghosts);
                 if (idGhost != -1) {
-                    if (ghosts[idGhost].isNormal()) {
-                        pontos += PONTO_MORRE;
-                        estadoJogo = ESTADO_PACMAN_MORTO;
-                    } else if (ghosts[idGhost].isVulneravel()) {
-                        ghosts[idGhost].estado = Ghost.ESTADO_OLHOS;
-                        pontos += PONTO_GHOST;
+                    if (cliente.ghosts[idGhost].isNormal()) {
+                        cliente.pontos += PONTO_MORRE;
+                        cliente.estadoJogo = ESTADO_PACMAN_MORTO;
+                    } else if (cliente.ghosts[idGhost].isVulneravel()) {
+                        cliente.ghosts[idGhost].estado = Ghost.ESTADO_OLHOS;
+                        cliente.pontos += PONTO_GHOST;
                     }
                 }
 
-                verificaComeuDoce(pacMan, doces);
+                verificaComeuDoce(cliente.pacMan, doces);
 
-                if (fruta.foiComida(pacMan)) {
-                    pontos += PONTO_FRUTA;
+                if (cliente.fruta.foiComida(cliente.pacMan)) {
+                    cliente.pontos += PONTO_FRUTA;
                 }
                 escreveInformacoes();
                 fim = System.currentTimeMillis();
-                tempo+= (fim - inicio);
+                cliente.tempo+= (fim - inicio);
                 break;
             case ESTADO_PACMAN_MORTO:
-                fruta.reiniciaProbabilidade();
-                pacMan.animate();
-                animaGhosts(ghosts);
-                if (pacMan.terminouAnimacaoMorte()) {
-                    if (pacMan.semVidas()) {
-                        estadoJogo = ESTADO_FIM;
+                cliente.fruta.reiniciaProbabilidade();
+                cliente.pacMan.animate();
+                animaGhosts(cliente.ghosts);
+                if (cliente.pacMan.terminouAnimacaoMorte()) {
+                    if (cliente.pacMan.semVidas()) {
+                        cliente.estadoJogo = ESTADO_FIM;
                     } else {
-                        initPersonagens(pacMan, ghosts);
-                        estadoJogo = ESTADO_INICIO;
+                        initPersonagens(cliente.pacMan, cliente.ghosts);
+                        cliente.estadoJogo = ESTADO_INICIO;
                     }
                 }
                 escreveInformacoes();
                 break;
             case ESTADO_NIVEL_COMPLETO:
-                nivel++;
-                switch (nivel) {
+                cliente.nivel++;
+                switch (cliente.nivel) {
                     case 2:
                         carregaNivel("maps/level2.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
-                        estadoJogo = ESTADO_INICIO;
+                        cliente.estadoJogo = ESTADO_INICIO;
                         break;
                     case 3:
                         velocidadeGhost = 3f;
                         velocidadePac = velocidadeGhost;
                         carregaNivel("maps/level3.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
-                        estadoJogo = ESTADO_INICIO;
+                        cliente.estadoJogo = ESTADO_INICIO;
                         break;
                     default:
-                        estadoJogo = ESTADO_FIM;
+                        cliente.estadoJogo = ESTADO_FIM;
                 }
                 break;
             case ESTADO_FIM:
-                this.pontos = 0;
-                this.nivel = 1;
+                this.cliente.pontos = 0;
+                this.cliente.nivel = 1;
                 tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
                 tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-                estadoJogo = ESTADO_ABERTURA;
+                cliente.estadoJogo = ESTADO_ABERTURA;
                 break;
         }
     }
@@ -191,18 +191,19 @@ public class App extends ApplicationAdapter {
     public void escreveInformacoes() {
         batch.begin();
         font.setColor(Color.WHITE);
-        font.draw(batch, "Pontos: " + pontos, 10, 20);
-        font.draw(batch, "Vidas: " + pacMan.vidas, 10, 40);
-        font.draw(batch, "Nível " + nivel, 10, 60);
-        font.draw(batch, "Tempo " + tempo/10, 450, 20);
+        font.draw(batch, "Pontos: " + cliente.pontos, 10, 20);
+        font.draw(batch, "Vidas: " + cliente.pacMan.vidas, 10, 40);
+        font.draw(batch, "Nível " + cliente.nivel, 10, 60);
+        font.draw(batch, "Tempo " + cliente.tempo/10, 450, 20);
         batch.end();
     }
 
     @Override
     public void dispose() {
         font.dispose();
-        pacMan.batch.dispose();
+        cliente.pacMan.batch.dispose();
         sprites.dispose();
+        cliente.fechaConexao();
     }
 
     private TextureRegion[] geraSpritesPacMan(Texture sprites, int numFrames) {
@@ -214,8 +215,8 @@ public class App extends ApplicationAdapter {
     }
 
     private void inicializaGhosts(Ghost[] ghosts, Texture sprites, float velocidade, int numSeguidoresPac) {
-        int offset = 20; //deslocamento para iniciar os frames dos ghosts em estado normal
-        for (int i = 0; i < ghosts.length; i++) {
+        int offset = 20; //deslocamento para iniciar os frames dos cliente.ghosts em estado normal
+        for (int i = 0; i < cliente.ghosts.length; i++) {
             TextureRegion frames[] = new TextureRegion[11];
             for (int j = 0; j < 5; j++) { //5 = frames do ghost no estado normal
                 frames[j] = new TextureRegion(sprites, (offset++ * 24), 0, 24, 24);
@@ -233,7 +234,7 @@ public class App extends ApplicationAdapter {
                 x = 12 * 24;
                 y = 14 * 24;
             }
-            ghosts[i] = new Ghost(x, y, frames, velocidade, i, (numSeguidoresPac--) > 0, nivel);
+            cliente.ghosts[i] = new Ghost(x, y, frames, velocidade, i, (numSeguidoresPac--) > 0, cliente.nivel);
         }
     }
 
@@ -244,9 +245,9 @@ public class App extends ApplicationAdapter {
     }
 
     private void andaGhosts(Ghost[] ghosts, MapObjects paredes, MapObjects pontosDecisao) {
-        for (Ghost ghost : ghosts) {
+        for (Ghost ghost : cliente.ghosts) {
             if (ghost.isSeguidorPacMan() && ghost.isNormal()) {
-                ghost.anda(paredes, pontosDecisao, pacMan.personagem.getX(), pacMan.personagem.getY());
+                ghost.anda(paredes, pontosDecisao, cliente.pacMan.personagem.getX(), cliente.pacMan.personagem.getY());
             } else {
                 ghost.anda(paredes, pontosDecisao, COORDENADA_BASE_GHOST_X, COORDENADA_BASE_GHOST_Y);
             }
@@ -255,19 +256,19 @@ public class App extends ApplicationAdapter {
 
     public boolean UsuarioIniciaJogo() {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            pacMan.direcaoAtual = App.ESQUERDA;
+            cliente.pacMan.direcaoAtual = App.ESQUERDA;
             return true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            pacMan.direcaoAtual = App.DIREITA;
+            cliente.pacMan.direcaoAtual = App.DIREITA;
             return true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            pacMan.direcaoAtual = App.CIMA;
+            cliente.pacMan.direcaoAtual = App.CIMA;
             return true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            pacMan.direcaoAtual = App.BAIXO;
+            cliente.pacMan.direcaoAtual = App.BAIXO;
             return true;
         }
         return false;
@@ -275,7 +276,7 @@ public class App extends ApplicationAdapter {
 
     private void initPersonagens(Pacman pacMan, Ghost[] ghosts) {
         pacMan.init(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        for (int i = 0; i < ghosts.length; i++) {
+        for (int i = 0; i < cliente.ghosts.length; i++) {
             int x;
             int y;
             if (i != 3) {
@@ -285,7 +286,7 @@ public class App extends ApplicationAdapter {
                 x = 12 * 24;
                 y = 14 * 24;
             }
-            ghosts[i].init(x, y, i);
+            cliente.ghosts[i].init(x, y, i);
         }
     }
 
@@ -299,31 +300,31 @@ public class App extends ApplicationAdapter {
         docesTiled = (TiledMapTileLayer) tiledMap.getLayers().get(indiceDoces);
         doces = realizaMapeamentoDoces(docesTiled, posicoesDocesGrandes);
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
-        pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidadePacMan, VIDAS_INICIAIS);
-        fruta = new Fruta(w, h, new TextureRegion(sprites, 46 * 24, 0, 24, 24));
+        cliente.pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidadePacMan, VIDAS_INICIAIS);
+        cliente.fruta = new Fruta(w, h, new TextureRegion(sprites, 46 * 24, 0, 24, 24));
         docesRestantes = 236;
-        inicializaGhosts(ghosts, sprites, velocidadeGhosts, numGhostsSeguemPac);
+        inicializaGhosts(cliente.ghosts, sprites, velocidadeGhosts, numGhostsSeguemPac);
     }
 
     private void verificaComeuDoce(Pacman pacMan, Map doces) {
         int tipoDoce = pacMan.comeDoce(doces);
         if (tipoDoce != -1) { //se o pacman comeu algum tipo de doce
             if (tipoDoce == 1) {//se foi um doce grande
-                for (Ghost ghost : ghosts) {
+                for (Ghost ghost : cliente.ghosts) {
                     ghost.transformaVulneravel();
-                    pontos += PONTO_DOCE_GRANDE;
+                    cliente.pontos += PONTO_DOCE_GRANDE;
                 }
             } else {
-                pontos += PONTO_DOCE_PEQUENO;
+                cliente.pontos += PONTO_DOCE_PEQUENO;
             }
             docesRestantes--;
             if (docesRestantes == 0) {
-                estadoJogo = ESTADO_NIVEL_COMPLETO;
+                cliente.estadoJogo = ESTADO_NIVEL_COMPLETO;
             }
         }
     }
 
-    private Map<String, Doce> realizaMapeamentoDoces(TiledMapTileLayer docesTiled, String[] posicoesDocesGrandes) {
+    static Map<String, Doce> realizaMapeamentoDoces(TiledMapTileLayer docesTiled, String[] posicoesDocesGrandes) {
         Map<String, Doce> mapeamento = new HashMap<String, Doce>();
         for (int x = 0; x < 25; x++) {
             for (int y = 0; y < 25; y++) {
@@ -340,7 +341,7 @@ public class App extends ApplicationAdapter {
         return mapeamento;
     }
 
-    private String[] geraPosicoesDocesGrandes() {
+    static String[] geraPosicoesDocesGrandes() {
         String[] posicoes = new String[4];
         posicoes[0] = "3-8";
         posicoes[1] = "21-8";
@@ -349,7 +350,7 @@ public class App extends ApplicationAdapter {
         return posicoes;
     }
 
-    private boolean isDoceGrande(String chaveHash, String[] posicoesDocesGrandes) {
+    private static boolean isDoceGrande(String chaveHash, String[] posicoesDocesGrandes) {
         for (String posicao : posicoesDocesGrandes) {
             if (posicao.equalsIgnoreCase(chaveHash)) {
                 return true;
