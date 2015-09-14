@@ -31,6 +31,7 @@ public class Cliente {
     protected Fruta fruta;
     protected Ghost ghosts[] = new Ghost[4];
     protected int docesRestantes;
+    protected int straitLineDistance[] = new int[4];
 
     public Cliente() {
         this.porta = 50001;
@@ -77,67 +78,14 @@ public class Cliente {
      }
      */
 
-    private String enviaOperacao(int op, String envio) {
-        String resposta = "";
-        String operacao;
-        try {
-            ps.print(envio);
-            resposta = br.readLine();
-            System.out.println(resposta);
-        } catch (Exception e) {
-            System.err.println("Erro ao enviar/receber operacao " + op + "!");
-        } finally {
-            operacao = resposta.substring(0, 3);
-        }
-        return resposta;
-    }
-
-    public void estabeleceConexao() {
-        String envio;
-        String resposta = "";
-        envio = "001\n\0";//operacao
-        resposta = enviaOperacao(1, envio);
-        String dados[] = resposta.substring(3).split("#");
-
-        estadoJogo = Byte.parseByte(dados[0]);
-        nivel = Byte.parseByte(dados[1]);
-        pontos = Integer.parseInt(dados[2]);
-        tempo = Integer.parseInt(dados[3]);
-        caminhoSprites = dados[4];
-        caminhoTiledMap = dados[5];
-    }
-
-    void carregaNivel(int nivel) {
-        String envio = "002" + nivel + "\n\0";
-        String resposta = enviaOperacao(2, envio);
-        String dados[] = resposta.substring(3).split("#");
-        this.nivel = Byte.parseByte(dados[0]);
-
-        caminhoTiledMap = dados[1];
-        indiceParedes = Byte.parseByte(dados[2]);
-        indicePontosDecisao = Byte.parseByte(dados[3]);
-        indiceDoces = Byte.parseByte(dados[4]);
-        App.tiledMap = new TmxMapLoader().load(caminhoTiledMap);
-        App.tiledMapRenderer = new OrthogonalTiledMapRenderer(App.tiledMap);
-        App.paredes = tiledMap.getLayers().get(indiceParedes).getObjects();
-        App.pontosDecisao = tiledMap.getLayers().get(indicePontosDecisao).getObjects();
-        App.docesTiled = (TiledMapTileLayer) tiledMap.getLayers().get(indiceDoces);
-        App.doces = App.realizaMapeamentoDoces(App.docesTiled, App.geraPosicoesDocesGrandes());
-        App.sprites = new Texture(Gdx.files.internal(caminhoSprites));
-        initPacMan(dados);
-        initFruta(dados);
-        docesRestantes = Integer.parseInt(dados[16]);
-        initGhosts(dados);
-    }
-
     private void initPacMan(String[] dados) throws NumberFormatException {
         pacMan = new Pacman(Float.parseFloat(dados[5]), //velocidade
                 Integer.parseInt(dados[6]), //vidas
                 Integer.parseInt(dados[7]), //vivo
                 Integer.parseInt(dados[8]), //direcao atual
                 Integer.parseInt(dados[9]), //direcao pretendida
-                Integer.parseInt(dados[10]), //coord. x
-                Integer.parseInt(dados[11]),//coord. y
+                Float.parseFloat(dados[10]), //coord. x
+                Float.parseFloat(dados[11]),//coord. y
                 geraSpritesPacMan(App.sprites, App.NUM_FRAMES_PACMAN));
     }
 
@@ -161,7 +109,8 @@ public class Cliente {
                     Integer.parseInt(dados[22 + deslocamento]),//seguepac
                     Integer.parseInt(dados[23 + deslocamento]),//x
                     Integer.parseInt(dados[24 + deslocamento]),//y
-                    geraSpritesGhost(i, App.sprites));//sprites
+                    geraSpritesGhost(i, App.sprites),
+                    i);//sprites
         }
 
     }
@@ -188,4 +137,132 @@ public class Cliente {
         return frames;
     }
 
+    private String enviaOperacao(int op, String envio) {
+        String resposta = "";
+        String operacao;
+        try {
+            ps.print(envio);
+            resposta = br.readLine();
+            //System.out.println(resposta);
+        } catch (Exception e) {
+            System.err.println("Erro ao enviar/receber operacao " + op + "!");
+        } finally {
+            //operacao = resposta.substring(0, 3);
+        }
+        return resposta;
+    }
+
+    public void opEstabeleceConexao() {
+        String envio;
+        String resposta = "";
+        envio = "001\n\0";//operacao
+        resposta = enviaOperacao(1, envio);
+        String dados[] = resposta.substring(3).split("#");
+
+        estadoJogo = Byte.parseByte(dados[0]);
+        nivel = Byte.parseByte(dados[1]);
+        pontos = Integer.parseInt(dados[2]);
+        tempo = Integer.parseInt(dados[3]);
+        caminhoSprites = dados[4];
+        caminhoTiledMap = dados[5];
+    }
+
+    void opCarregaNivel(int nivel) {
+        String envio = "002" + nivel + "\n\0";
+        String resposta = enviaOperacao(2, envio);
+        String dados[] = resposta.substring(3).split("#");
+        this.nivel = Byte.parseByte(dados[0]);
+
+        caminhoTiledMap = dados[1];
+        indiceParedes = Byte.parseByte(dados[2]);
+        indicePontosDecisao = Byte.parseByte(dados[3]);
+        indiceDoces = Byte.parseByte(dados[4]);
+        App.tiledMap = new TmxMapLoader().load(caminhoTiledMap);
+        App.tiledMapRenderer = new OrthogonalTiledMapRenderer(App.tiledMap);
+        App.paredes = tiledMap.getLayers().get(indiceParedes).getObjects();
+        App.pontosDecisao = tiledMap.getLayers().get(indicePontosDecisao).getObjects();
+        App.docesTiled = (TiledMapTileLayer) tiledMap.getLayers().get(indiceDoces);
+        App.doces = App.realizaMapeamentoDoces(App.docesTiled, App.geraPosicoesDocesGrandes());
+        App.sprites = new Texture(Gdx.files.internal(caminhoSprites));
+        initPacMan(dados);
+        initFruta(dados);
+        docesRestantes = Integer.parseInt(dados[16]);
+        initGhosts(dados);
+        estadoJogo = Byte.parseByte(dados[dados.length - 1]);
+    }
+
+    void opIniciaMovimentacao(int teclaPressionada) {
+        String envio = "003" + teclaPressionada + "\n\0";
+        String resposta = enviaOperacao(3, envio);
+        String dados[] = resposta.substring(3).split("#");
+        estadoJogo = Byte.parseByte(dados[0]);
+        pacMan.direcaoAtual = Integer.parseInt(dados[1]);
+    }
+
+    void opAnimaFruta() {
+        String envio = "004\n\0";
+        String resposta = enviaOperacao(4, envio);
+        //    System.out.println("r "+resposta);
+        String dados[] = resposta.substring(3).split("#");
+        fruta.visivel = Integer.parseInt(dados[0]) == 1;
+        fruta.animate();
+    }
+
+    void opComeuFruta() {
+        String envio = "005\n\0";
+        String resposta = enviaOperacao(5, envio);
+        String dados[] = resposta.substring(3).split("#");
+        pontos = Integer.parseInt(dados[0]);
+        fruta.visivel = Integer.parseInt(dados[1]) == 1;
+    }
+
+    void opPacNovaDirecaoPretendida(int teclaPressionada) {
+        String envio = "006" + teclaPressionada + "\n\0";
+        String resposta = enviaOperacao(6, envio);
+        String dados[] = resposta.substring(3).split("#");
+        pacMan.direcaoPretendida = Integer.parseInt(dados[0]);
+    }
+
+    void opPacManAnda(float x, float y, boolean direcaoPretendidaPossivel) {
+        int dir = (direcaoPretendidaPossivel ? 1 : 0);
+        String envio = "007#" + x + "#" + y + "#" + dir + "\n\0";
+        String resposta = enviaOperacao(7, envio);
+        String dados[] = resposta.substring(3).split("#");
+        pacMan.direcaoAtual = Integer.parseInt(dados[0]);
+        pacMan.personagem.setX(Float.parseFloat(dados[1]));
+        pacMan.personagem.setY(Float.parseFloat(dados[2]));
+    }
+
+    void opPacManColidiuParede() {
+        String envio = "008\n\0";
+        String resposta = enviaOperacao(8, envio);
+        String dados[] = resposta.substring(3).split("#");
+        pacMan.direcaoAtual = Integer.parseInt(dados[0]);
+    }
+
+    void opAtualizaDirecaoGhost(int id, int melhorDirecao) {
+        String envio = "009" + id + "" + melhorDirecao + "\n\0";
+        String resposta = enviaOperacao(9, envio);
+        String dados[] = resposta.substring(3).split("#");
+        ghosts[id].direcao = Integer.parseInt(dados[0]);
+    }
+
+    void opStraitLineDistance(int id, int x, int y) {
+        String envio = "010#" + id + "#" + x + "#" + y + "\n\0";
+        String resposta = enviaOperacao(10, envio);
+        String dados[] = resposta.substring(3).split("#");
+        straitLineDistance[0] = Integer.parseInt(dados[0]);
+        straitLineDistance[1] = Integer.parseInt(dados[1]);
+        straitLineDistance[2] = Integer.parseInt(dados[2]);
+        straitLineDistance[3] = Integer.parseInt(dados[3]);
+    }
+
+    //void opGhostAnda(int id, int x, int y) {
+    void opGhostAnda(int id, float x, float y) {
+        String envio = "011#" + id + "#" + x + "#" + y + "\n\0";
+        String resposta = enviaOperacao(11, envio);
+        String dados[] = resposta.substring(3).split("#");
+        ghosts[id].personagem.setX(Float.parseFloat(dados[0]));
+        ghosts[id].personagem.setY(Float.parseFloat(dados[1]));
+    }
 }

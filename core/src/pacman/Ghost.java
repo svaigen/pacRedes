@@ -20,6 +20,7 @@ public class Ghost {
     static final int TEMPO_PRESO = 100;
     static final int TEMPO_VULNERAVEL = 800;
 
+    protected int id;
     protected Sprite personagem;
     protected TextureRegion frames[];
     protected int estado;
@@ -38,13 +39,14 @@ public class Ghost {
         this.batch = new SpriteBatch();
         this.init(x, y, ghostId);
         seguePacMan = segue;
-        if (seguePacMan && nivel==3){
+        if (seguePacMan && nivel == 3) {
             this.velocidade -= 1f;
         }
     }
 
     Ghost(int estado, int direcao, float velocidade, int tempoSerLivre,
-            int tempoInvulneravel, int seguePacMan, int x, int y, TextureRegion[] sprites) {
+            int tempoInvulneravel, int seguePacMan, int x, int y, TextureRegion[] sprites, int id) {
+        this.id = id;
         frames = sprites;
         this.velocidade = velocidade;
         this.batch = new SpriteBatch();
@@ -86,31 +88,10 @@ public class Ghost {
                     do {
                         direcao = new Random().nextInt(4);
                     } while (colidiuParedes(paredes, direcao) || (Math.abs(direcao - direcaoAnterior) == 2));
+                    App.cliente.opAtualizaDirecaoGhost(id, direcao);
                 }
             }
-
-            switch (direcao) {
-                case App.ESQUERDA:
-                    if (!colidiuParedes(paredes, App.ESQUERDA)) {
-                        this.personagem.translateX(-velocidade);
-                    }
-                    break;
-                case App.DIREITA:
-                    if (!colidiuParedes(paredes, App.DIREITA)) {
-                        this.personagem.translateX(velocidade);
-                    }
-                    break;
-                case App.CIMA:
-                    if (!colidiuParedes(paredes, App.CIMA)) {
-                        this.personagem.translateY(velocidade);
-                    }
-                    break;
-                case App.BAIXO:
-                    if (!colidiuParedes(paredes, App.BAIXO)) {
-                        this.personagem.translateY(-velocidade);
-                    }
-                    break;
-            }
+            App.cliente.opGhostAnda(id, this.personagem.getX(), this.personagem.getY());
         } else {
             tempoParaFicarLivre--;
         }
@@ -230,30 +211,24 @@ public class Ghost {
     }
 
     private void escolheDirecaoParaObjetivo(float x, float y, MapObjects paredes) {
-        ArrayList<Integer> direcoes = new ArrayList();
-        int movEsquerda = (int) Math.sqrt(Math.pow(((this.personagem.getX() - this.velocidade) - x), 2) + Math.pow(this.personagem.getY() - y, 2));
-        int movCima = (int) Math.sqrt(Math.pow((this.personagem.getX() - x), 2) + Math.pow(this.personagem.getY() + velocidade - y, 2));
-        int movDireita = (int) Math.sqrt(Math.pow((this.personagem.getX() + velocidade) - x, 2) + Math.pow(this.personagem.getY() - y, 2));
-        int movBaixo = (int) Math.sqrt(Math.pow((this.personagem.getX()) - x, 2) + Math.pow(this.personagem.getY() - velocidade - y, 2));
-        direcoes.add(movEsquerda);
-        direcoes.add(movCima);
-        direcoes.add(movDireita);
-        direcoes.add(movBaixo);
+        App.cliente.opStraitLineDistance(id, (int) x, (int) y);
+
         boolean escolheu = false;
         int melhorDirecao = -1;
         do {
             int menorMov = Integer.MAX_VALUE;
-            for (int i = 0; i < direcoes.size(); i++) {
-                if (direcoes.get(i) < menorMov) {
-                    menorMov = direcoes.get(i);
+            for (int i = 0; i < 4; i++) {
+                if (App.cliente.straitLineDistance[i] < menorMov) {
+                    menorMov = App.cliente.straitLineDistance[i];
                     melhorDirecao = i;
                 }
             }
             if (!colidiuParedes(paredes, melhorDirecao)) {
                 escolheu = true;
-                this.direcao = melhorDirecao;
+                //this.direcao = melhorDirecao;
+                App.cliente.opAtualizaDirecaoGhost(id, melhorDirecao);
             } else {
-                direcoes.set(melhorDirecao, Integer.MAX_VALUE);
+                App.cliente.straitLineDistance[melhorDirecao]= Integer.MAX_VALUE;
             }
         } while (!escolheu);
     }
@@ -261,6 +236,5 @@ public class Ghost {
     public boolean isSeguidorPacMan() {
         return seguePacMan;
     }
-    
-    
+
 }

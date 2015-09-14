@@ -47,14 +47,13 @@ public class App extends ApplicationAdapter {
     static final int COORDENADA_BASE_GHOST_X = 12 * 24;
     static final int COORDENADA_BASE_GHOST_Y = 14 * 24;
     
-    Cliente cliente = new Cliente();
+    static Cliente cliente = new Cliente();
 
     float velocidadePac;
     float velocidadeGhost;
     float w;
     float h;
 
-    int docesRestantes;
     static Texture sprites;
     static TextureRegion frames[];
     static TiledMap tiledMap;
@@ -71,7 +70,7 @@ public class App extends ApplicationAdapter {
     @Override
     public void create() {
         /*Estabelecimento de conexao e obtencao de dados iniciais*/
-        cliente.estabeleceConexao();
+        cliente.opEstabeleceConexao();
         tiledMap = new TmxMapLoader().load(cliente.caminhoTiledMap);
         /*----------------------------------------------------------*/
         
@@ -98,12 +97,8 @@ public class App extends ApplicationAdapter {
         tiledMapRenderer.render();
         switch (cliente.estadoJogo) {
             case ESTADO_ABERTURA:
-                velocidadePac = 2f;
-                velocidadeGhost = 2f;
                 if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
-                    cliente.carregaNivel(cliente.nivel);
-                    //carregaNivel("maps/level1.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 0);
-                    cliente.estadoJogo = ESTADO_INICIO;
+                    cliente.opCarregaNivel(cliente.nivel);
                 } else {
                     batch.begin();
                     font.draw(batch, "Aperte qualquer tecla para começar", 180, 150);
@@ -113,15 +108,16 @@ public class App extends ApplicationAdapter {
             case ESTADO_INICIO:
                 cliente.pacMan.animate();
                 animaGhosts(cliente.ghosts);
-                if (UsuarioIniciaJogo()) {
-                    cliente.estadoJogo = ESTADO_JOGANDO;
+                int teclaPressionada = teclaPressionadaUsuario();
+                if (teclaPressionada != -1) {
+                    cliente.opIniciaMovimentacao(teclaPressionada);
                 }
                 escreveInformacoes();
                 break;
             case ESTADO_JOGANDO:
                 inicio = System.currentTimeMillis();
-                cliente.fruta.animate();
-                cliente.pacMan.anda(paredes);
+                cliente.opAnimaFruta();
+                cliente.pacMan.anda(paredes,cliente);
                 andaGhosts(cliente.ghosts, paredes, pontosDecisao);
                 cliente.pacMan.animate();
                 animaGhosts(cliente.ghosts);
@@ -141,7 +137,8 @@ public class App extends ApplicationAdapter {
                 verificaComeuDoce(cliente.pacMan, doces);
 
                 if (cliente.fruta.foiComida(cliente.pacMan)) {
-                    cliente.pontos += PONTO_FRUTA;
+                    cliente.opComeuFruta();
+                    //cliente.pontos += PONTO_FRUTA;
                 }
                 escreveInformacoes();
                 fim = System.currentTimeMillis();
@@ -162,25 +159,21 @@ public class App extends ApplicationAdapter {
                 escreveInformacoes();
                 break;
             case ESTADO_NIVEL_COMPLETO:
-                cliente.nivel++;
                 switch (cliente.nivel) {
-                    case 2:
-                        carregaNivel("maps/level2.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
-                        cliente.estadoJogo = ESTADO_INICIO;
+                    case 1: //se completou nivel 1
+                        cliente.opCarregaNivel(cliente.nivel);
                         break;
-                    case 3:
-                        velocidadeGhost = 3f;
-                        velocidadePac = velocidadeGhost;
-                        carregaNivel("maps/level3.tmx", 2, 3, 1, velocidadePac, velocidadeGhost, geraPosicoesDocesGrandes(), 1);
-                        cliente.estadoJogo = ESTADO_INICIO;
+                    case 2: //completou nivel 2
+                        cliente.opCarregaNivel(cliente.nivel);;
                         break;
-                    default:
-                        cliente.estadoJogo = ESTADO_FIM;
+                    default: //completou nivel 3
+                        //cliente.estadoJogo = ESTADO_FIM;
+                        cliente.opCarregaNivel(cliente.nivel);
                 }
                 break;
             case ESTADO_FIM:
                 this.cliente.pontos = 0;
-                this.cliente.nivel = 1;
+                this.cliente.nivel = 0;
                 tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
                 tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
                 cliente.estadoJogo = ESTADO_ABERTURA;
@@ -254,24 +247,24 @@ public class App extends ApplicationAdapter {
         }
     }
 
-    public boolean UsuarioIniciaJogo() {
+    public int teclaPressionadaUsuario() {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            cliente.pacMan.direcaoAtual = App.ESQUERDA;
-            return true;
+            //cliente.pacMan.direcaoAtual = App.ESQUERDA;            
+            return Input.Keys.LEFT;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            cliente.pacMan.direcaoAtual = App.DIREITA;
-            return true;
+            //cliente.pacMan.direcaoAtual = App.DIREITA;
+            return Input.Keys.RIGHT;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            cliente.pacMan.direcaoAtual = App.CIMA;
-            return true;
+            //cliente.pacMan.direcaoAtual = App.CIMA;
+            return Input.Keys.UP;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            cliente.pacMan.direcaoAtual = App.BAIXO;
-            return true;
+            //cliente.pacMan.direcaoAtual = App.BAIXO;
+            return Input.Keys.DOWN;
         }
-        return false;
+        return -1;
     }
 
     private void initPersonagens(Pacman pacMan, Ghost[] ghosts) {
@@ -302,7 +295,7 @@ public class App extends ApplicationAdapter {
         sprites = new Texture(Gdx.files.internal("sprites/sprites.png"));
         cliente.pacMan = new Pacman(w, h, geraSpritesPacMan(sprites, NUM_FRAMES_PACMAN), velocidadePacMan, VIDAS_INICIAIS);
         cliente.fruta = new Fruta(w, h, new TextureRegion(sprites, 46 * 24, 0, 24, 24));
-        docesRestantes = 236;
+        cliente.docesRestantes = 236;
         inicializaGhosts(cliente.ghosts, sprites, velocidadeGhosts, numGhostsSeguemPac);
     }
 
@@ -317,8 +310,8 @@ public class App extends ApplicationAdapter {
             } else {
                 cliente.pontos += PONTO_DOCE_PEQUENO;
             }
-            docesRestantes--;
-            if (docesRestantes == 0) {
+            cliente.docesRestantes--;
+            if (cliente.docesRestantes == 0) {
                 cliente.estadoJogo = ESTADO_NIVEL_COMPLETO;
             }
         }

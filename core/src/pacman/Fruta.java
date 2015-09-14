@@ -32,7 +32,6 @@ public class Fruta {
     }
 
     public void animate() {
-        calculaProbabilidadefruta();
         if (visivel) {
             batch.begin();
             sprite.draw(batch);
@@ -80,8 +79,8 @@ public class Fruta {
             Rectangle rPac = new Rectangle(pacMan.personagem.getX(), pacMan.personagem.getY(), pacMan.personagem.getWidth(), pacMan.personagem.getHeight());
             Rectangle rFruta = new Rectangle(sprite.getX(), sprite.getY(), sprite.getWidth(), sprite.getWidth());        
             if (rPac.overlaps(rFruta)){
-                visivel = false;
-                probabilidade = FATOR_PROBABILIDADE;
+                //visivel = false;
+                //probabilidade = FATOR_PROBABILIDADE;
                 return true;
             }
         }

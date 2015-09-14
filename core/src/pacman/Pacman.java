@@ -37,7 +37,7 @@ public class Pacman {
 
     }
 
-    Pacman(float velocidade, int vidas, int vivo, int dirAtual, int dirPret, int x, int y, TextureRegion[] sprites) {
+    Pacman(float velocidade, int vidas, int vivo, int dirAtual, int dirPret, float x, float y, TextureRegion[] sprites) {
         frames = sprites;
         this.velocidade = velocidade;
         this.vidas = vidas;
@@ -91,47 +91,28 @@ public class Pacman {
         this.batch.end();
     }
 
-    public void anda(MapObjects objects) {
+    public void anda(MapObjects objects, Cliente cliente) {
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            this.direcaoPretendida = App.ESQUERDA;
+            //this.direcaoPretendida = App.ESQUERDA;
+            cliente.opPacNovaDirecaoPretendida(Input.Keys.LEFT);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            this.direcaoPretendida = App.DIREITA;
+            //this.direcaoPretendida = App.DIREITA;
+            cliente.opPacNovaDirecaoPretendida(Input.Keys.RIGHT);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            this.direcaoPretendida = App.CIMA;
+            //this.direcaoPretendida = App.CIMA;
+            cliente.opPacNovaDirecaoPretendida(Input.Keys.UP);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            this.direcaoPretendida = App.BAIXO;
+            //this.direcaoPretendida = App.BAIXO;
+            cliente.opPacNovaDirecaoPretendida(Input.Keys.DOWN);
         }
+        boolean dirPretendidaLivre = !colidiuWalls(objects, direcaoPretendida);
+        cliente.opPacManAnda(personagem.getX(), personagem.getY(), dirPretendidaLivre);
 
-        if (!colidiuWalls(objects, direcaoPretendida)) {
-            direcaoAtual = direcaoPretendida;
-        }
-        switch (direcaoAtual) {
-            case App.ESQUERDA:
-                if (!colidiuWalls(objects, App.ESQUERDA)) {
-                    this.personagem.translateX(-velocidade);
-                }
-                break;
-            case App.DIREITA:
-                if (!colidiuWalls(objects, App.DIREITA)) {
-                    this.personagem.translateX(velocidade);
-                }
-                break;
-            case App.CIMA:
-                if (!colidiuWalls(objects, App.CIMA)) {
-                    this.personagem.translateY(velocidade);
-                }
-                break;
-            case App.BAIXO:
-                if (!colidiuWalls(objects, App.BAIXO)) {
-                    this.personagem.translateY(-velocidade);
-                }
-                break;
-        }
         if (colidiuWalls(objects, direcaoAtual)) {
-            this.direcaoAtual = App.PARADO;
+            cliente.opPacManColidiuParede();
         }
 
     }
