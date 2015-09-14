@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serv_addr, cli_addr;
     int n;
 
-    /* First call to socket() function */
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd < 0) {
@@ -21,7 +20,6 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    /* Initialize socket structure */
     bzero((char *) &serv_addr, sizeof (serv_addr));
     portno = 50002;
 
@@ -29,15 +27,10 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(portno);
 
-    /* Now bind the host address using bind() call.*/
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof (serv_addr)) < 0) {
         perror("Erro ao realizar o binding");
         exit(1);
     }
-
-    /* Now start listening for the clients, here process will
-     * go in sleep mode and will wait for the incoming connection
-     */
 
     listen(sockfd, 5);
     clilen = sizeof (cli_addr);
@@ -50,9 +43,9 @@ int main(int argc, char *argv[]) {
     }
     inicializaDados();
     while (1) {
-        /* If connection is established then start communicating */
         bzero(buffer, 1024);
         n = read(newsockfd, buffer, 1023);
+        printf("Mensagem recebida: %s\n", buffer);
         if (n < 0) {
             perror("ERROR reading from socket");
             exit(1);
@@ -66,30 +59,30 @@ int main(int argc, char *argv[]) {
         int op = atoi(operacao);
         switch (op) {
             case 1:
-                resposta = op001(); //estabelece comunicacao inicial
+                resposta = op001();
                 break;
             case 2:
             {
                 char nivel = buffer[3];
-                resposta = op002(nivel); //carrega nivel
+                resposta = op002(nivel);
                 break;
             }
             case 3:
             {
                 char teclaPressionada[3] = {buffer[3], buffer[4], '\0'};
-                resposta = op003(teclaPressionada); //inicia um nivel
+                resposta = op003(teclaPressionada); 
                 break;
             }
             case 4:
-                resposta = op004(); //verifica probabilidade da fruta aparecer
+                resposta = op004();
                 break;
             case 5:
-                resposta = op005(); //pacMan comeu fruta
+                resposta = op005();
                 break;
             case 6:
             {
                 char teclaPressionada[3] = {buffer[3], buffer[4], '\0'};
-                resposta = op006(teclaPressionada); //tecla pretendida pelo usuario
+                resposta = op006(teclaPressionada);
                 break;
             }
             case 7:
@@ -99,11 +92,11 @@ int main(int argc, char *argv[]) {
                 int direcaoPretendidaLivre;
                 int lixo;
                 sscanf(buffer, "%d#%f#%f#%d\n", &lixo, &x, &y, &direcaoPretendidaLivre);
-                resposta = op007(x, y, direcaoPretendidaLivre); //realiza a movimentacao do pacMan
+                resposta = op007(x, y, direcaoPretendidaLivre);
                 break;
             }
             case 8:
-                resposta = op008(); //informa que o pacman colidiu com uma parede
+                resposta = op008();
                 break;
             case 9:
                 resposta = op009(buffer[3], buffer[4]);
@@ -128,13 +121,13 @@ int main(int argc, char *argv[]) {
                 resposta = op011(id, x, y);
                 break;
             }
-            case 12: //requisita estado do fantasma
+            case 12:
                 resposta = op012(buffer[3], buffer[4]);
                 break;
-            case 13: //atualiza tempo preso do fantasma
+            case 13:
                 resposta = op013(buffer[3]);
                 break;
-            case 14: //atualiza tempo invulneravel do fantasma
+            case 14:
                 resposta = op014(buffer[3]);
                 break;
             case 15:
@@ -165,6 +158,7 @@ int main(int argc, char *argv[]) {
                 resposta = op023();
                 break;
         }
+        printf("Resposta enviada: %s\n", resposta);
         n = write(newsockfd, resposta, strlen(resposta));
         //printf("Mensagem recebida pelo servidor global: %s\n",buffer);
 

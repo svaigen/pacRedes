@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
     struct hostent *global_server;
     int n;
     char buffer_local_server[1024], buffer_global_server[1024];
-
     /*Definicoes e atribuicoes de comunicacao com o servidor global*/
     portno_global_server = 50002;
     sockfd_global_server = socket(AF_INET, SOCK_STREAM, 0);
@@ -80,22 +79,22 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        printf("Mensagem repassada: %s\n", buffer_local_server);
+        printf("Mensagem enviada ao servidor global: %s\n", buffer_local_server);
 
         //copia e repassa a mensagem para o servidor global
         strcpy(buffer_global_server, buffer_local_server);
         write(sockfd_global_server, buffer_global_server, strlen(buffer_global_server));
         bzero(buffer_local_server, 1024);
         bzero(buffer_global_server, 1024);
-        
+
         //recebe a resposta do servidor global
         read(sockfd_global_server, buffer_global_server, 1023);
         //printf("buffer global %s\n",buffer_global_server);
-        
+
         /* Repassa a resposta para o cliente */
         strcpy(buffer_local_server, buffer_global_server);
+        printf("Resposta enviada ao cliente: %s\n", buffer_local_server);
         write(newsockfd_local_server, buffer_local_server, strlen(buffer_local_server));
-        //printf("buffer local %s\n",buffer_local_server);
     }
     close(newsockfd_local_server);
     close(sockfd_local_server);
