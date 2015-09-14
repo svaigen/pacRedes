@@ -2,6 +2,7 @@ package pacman;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -264,5 +265,111 @@ public class Cliente {
         String dados[] = resposta.substring(3).split("#");
         ghosts[id].personagem.setX(Float.parseFloat(dados[0]));
         ghosts[id].personagem.setY(Float.parseFloat(dados[1]));
+    }
+
+    void opRequisitaEstadoGhost(int id, int estado) {
+        String envio = "012" + id + estado + "\n\0";
+        String resposta = enviaOperacao(12, envio);
+        String dados[] = resposta.substring(3).split("#");
+        ghosts[id].estado = Integer.parseInt(dados[0]);
+    }
+
+    void opRequisitaTempoFicarLivre(int id) {
+        String envio = "013" + id + "\n\0";
+        String resposta = enviaOperacao(13, envio);
+        String dados[] = resposta.substring(3).split("#");
+        ghosts[id].tempoParaFicarLivre = Integer.parseInt(dados[0]);
+    }
+
+    void opRequisitaTempoParaInvulneravel(int id) {
+        String envio = "014" + id + "\n\0";
+        String resposta = enviaOperacao(14, envio);
+        String dados[] = resposta.substring(3).split("#");
+        ghosts[id].tempoParaInvulneravel = Integer.parseInt(dados[0]);
+    }
+
+    void opColisaoFantasma(int id) {
+        String envio = "015" + id + "\n\0";
+        String resposta = enviaOperacao(15, envio);
+        String dados[] = resposta.substring(3).split("#");
+        this.pontos = Integer.parseInt(dados[0]);
+        this.estadoJogo = Byte.parseByte(dados[1]);
+        ghosts[id].estado = Integer.parseInt(dados[2]);
+    }
+
+    void opPacManMorto() {
+        String envio = "016\n\0";
+        String resposta = enviaOperacao(16, envio);
+        String dados[] = resposta.substring(3).split("#");
+        this.pacMan.vidas = Integer.parseInt(dados[0]);
+        this.pacMan.vivo = Integer.parseInt(dados[1]) == 1;
+
+    }
+
+    void opReviverPacMan() {
+        String envio = "017\n\0";
+        String resposta = enviaOperacao(17, envio);
+        String dados[] = resposta.substring(3).split("#");
+        this.estadoJogo = Byte.parseByte(dados[0]);
+    }
+
+    void opIniciaPacMan() {
+        String envio = "018\n\0";
+        String resposta = enviaOperacao(18, envio);
+        String dados[] = resposta.substring(3).split("#");
+        this.pacMan.frameAtual = 0;
+        this.pacMan.delay = Pacman.DELAY_MAX;
+        this.pacMan.batch = new SpriteBatch();
+        this.pacMan.personagem.setPosition(Integer.parseInt(dados[0]), Integer.parseInt(dados[1]));
+        this.pacMan.vivo = Integer.parseInt(dados[2]) == 1;
+        this.pacMan.direcaoAtual = Integer.parseInt(dados[3]);
+        this.pacMan.direcaoPretendida = Integer.parseInt(dados[4]);
+
+    }
+
+    void opIniciaGhost() {
+        String envio = "019\n\0";
+        String resposta = enviaOperacao(19, envio);
+        String dados[] = resposta.substring(3).split("#");
+        for (int i = 0; i < 4; i++) {
+            int deslocamento = i * 6;
+            ghosts[i].estado = Byte.parseByte(dados[0 + deslocamento]);
+            ghosts[i].direcao = Integer.parseInt(dados[1 + deslocamento]);
+            ghosts[i].tempoParaFicarLivre = Integer.parseInt(dados[2 + deslocamento]);
+            ghosts[i].tempoParaInvulneravel = Integer.parseInt(dados[3 + deslocamento]);
+            ghosts[i].personagem.setX(Integer.parseInt(dados[4 + deslocamento]));
+            ghosts[i].personagem.setY(Integer.parseInt(dados[5 + deslocamento]));
+            ghosts[i].frameAtual = 0;
+            ghosts[i].delay = Ghost.DELAY_MAX;
+
+        }
+
+    }
+
+    void opDoce(int tipoDoce) {
+        String envio = "020\n\0";
+        String resposta = enviaOperacao(20, envio);
+        String dados[] = resposta.substring(3).split("#");
+        pontos = Integer.parseInt(dados[0]);
+        docesRestantes = Integer.parseInt(dados[1]);
+        estadoJogo = Byte.parseByte(dados[2]);
+    }
+
+    void opExibeAjuda() {
+        String envio = "021\n\0";
+        String resposta = enviaOperacao(21, envio);
+        String dados[] = resposta.substring(3).split("#");
+        caminhoTiledMap = dados[0];
+        App.tiledMap = new TmxMapLoader().load(caminhoTiledMap);
+        App.tiledMapRenderer = new OrthogonalTiledMapRenderer(App.tiledMap);
+    }
+
+    void opExibeWin() {
+        String envio = "022\n\0";
+        String resposta = enviaOperacao(22, envio);
+        String dados[] = resposta.substring(3).split("#");
+        caminhoTiledMap = dados[0];
+        App.tiledMap = new TmxMapLoader().load(caminhoTiledMap);
+        App.tiledMapRenderer = new OrthogonalTiledMapRenderer(App.tiledMap);
     }
 }

@@ -46,7 +46,9 @@ public class App extends ApplicationAdapter {
 
     static final int COORDENADA_BASE_GHOST_X = 12 * 24;
     static final int COORDENADA_BASE_GHOST_Y = 14 * 24;
-    
+
+    static final int VENCEDOR = 5;
+
     static Cliente cliente = new Cliente();
 
     float velocidadePac;
@@ -66,6 +68,8 @@ public class App extends ApplicationAdapter {
     SpriteBatch batch;
     static Map<String, Doce> doces = new HashMap<String, Doce>();
     long inicio, fim;
+    boolean ajuda = false;
+    boolean venceu = false;
 
     @Override
     public void create() {
@@ -73,9 +77,9 @@ public class App extends ApplicationAdapter {
         cliente.opEstabeleceConexao();
         tiledMap = new TmxMapLoader().load(cliente.caminhoTiledMap);
         /*----------------------------------------------------------*/
-        
+
         /*Inicializacao de ferramentas da biblioteca LibGDX, para
-        iniciar a renderizacão do jogo*/
+         iniciar a renderizacão do jogo*/
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 600, 600);
         camera.update();
@@ -97,15 +101,23 @@ public class App extends ApplicationAdapter {
         tiledMapRenderer.render();
         switch (cliente.estadoJogo) {
             case ESTADO_ABERTURA:
-                if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
-                    cliente.opCarregaNivel(cliente.nivel);
+                venceu = false;
+                if (Gdx.input.isKeyPressed(Input.Keys.I)) {
+                    ajuda = true;
+                    cliente.opExibeAjuda();
                 } else {
-                    batch.begin();
-                    font.draw(batch, "Aperte qualquer tecla para começar", 180, 150);
-                    batch.end();
+                    if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
+                        cliente.opCarregaNivel(cliente.nivel);
+                    } else if (!ajuda) {
+                        batch.begin();
+                        font.draw(batch, "Aperte I para instrucões. Aperte qualquer outra tecla para começar", 75, 150);
+                        batch.end();
+                    }
                 }
                 break;
+
             case ESTADO_INICIO:
+                ajuda = false;
                 cliente.pacMan.animate();
                 animaGhosts(cliente.ghosts);
                 int teclaPressionada = teclaPressionadaUsuario();
@@ -117,7 +129,7 @@ public class App extends ApplicationAdapter {
             case ESTADO_JOGANDO:
                 inicio = System.currentTimeMillis();
                 cliente.opAnimaFruta();
-                cliente.pacMan.anda(paredes,cliente);
+                cliente.pacMan.anda(paredes, cliente);
                 andaGhosts(cliente.ghosts, paredes, pontosDecisao);
                 cliente.pacMan.animate();
                 animaGhosts(cliente.ghosts);
@@ -125,13 +137,7 @@ public class App extends ApplicationAdapter {
                 /*Verficacao de colisao do pacman com fantasmas*/
                 int idGhost = cliente.pacMan.colidiuGhosts(cliente.ghosts);
                 if (idGhost != -1) {
-                    if (cliente.ghosts[idGhost].isNormal()) {
-                        cliente.pontos += PONTO_MORRE;
-                        cliente.estadoJogo = ESTADO_PACMAN_MORTO;
-                    } else if (cliente.ghosts[idGhost].isVulneravel()) {
-                        cliente.ghosts[idGhost].estado = Ghost.ESTADO_OLHOS;
-                        cliente.pontos += PONTO_GHOST;
-                    }
+                    App.cliente.opColisaoFantasma(idGhost);
                 }
 
                 verificaComeuDoce(cliente.pacMan, doces);
@@ -142,19 +148,18 @@ public class App extends ApplicationAdapter {
                 }
                 escreveInformacoes();
                 fim = System.currentTimeMillis();
-                cliente.tempo+= (fim - inicio);
+                cliente.tempo += (fim - inicio);
                 break;
             case ESTADO_PACMAN_MORTO:
-                cliente.fruta.reiniciaProbabilidade();
                 cliente.pacMan.animate();
                 animaGhosts(cliente.ghosts);
                 if (cliente.pacMan.terminouAnimacaoMorte()) {
-                    if (cliente.pacMan.semVidas()) {
-                        cliente.estadoJogo = ESTADO_FIM;
-                    } else {
-                        initPersonagens(cliente.pacMan, cliente.ghosts);
-                        cliente.estadoJogo = ESTADO_INICIO;
+                    App.cliente.opReviverPacMan();
+                    if (cliente.estadoJogo == ESTADO_INICIO) {
+                        initPersonagens();
+
                     }
+
                 }
                 escreveInformacoes();
                 break;
@@ -164,19 +169,27 @@ public class App extends ApplicationAdapter {
                         cliente.opCarregaNivel(cliente.nivel);
                         break;
                     case 2: //completou nivel 2
-                        cliente.opCarregaNivel(cliente.nivel);;
+                        cliente.opCarregaNivel(cliente.nivel);
                         break;
                     default: //completou nivel 3
-                        //cliente.estadoJogo = ESTADO_FIM;
-                        cliente.opCarregaNivel(cliente.nivel);
+                        venceu = true;
+                    //cliente.estadoJogo = ESTADO_FIM;
+
                 }
                 break;
             case ESTADO_FIM:
-                this.cliente.pontos = 0;
-                this.cliente.nivel = 0;
-                tiledMap = new TmxMapLoader().load("maps/inicio.tmx");
-                tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
-                cliente.estadoJogo = ESTADO_ABERTURA;
+                if (venceu) {
+                    cliente.opExibeWin();
+                    if (Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)) {
+                        this.cliente.opEstabeleceConexao();
+                        tiledMap = new TmxMapLoader().load(cliente.caminhoTiledMap);
+                        tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+                    }
+                } else {
+                    this.cliente.opEstabeleceConexao();
+                    tiledMap = new TmxMapLoader().load(cliente.caminhoTiledMap);
+                    tiledMapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+                }
                 break;
         }
     }
@@ -187,7 +200,7 @@ public class App extends ApplicationAdapter {
         font.draw(batch, "Pontos: " + cliente.pontos, 10, 20);
         font.draw(batch, "Vidas: " + cliente.pacMan.vidas, 10, 40);
         font.draw(batch, "Nível " + cliente.nivel, 10, 60);
-        font.draw(batch, "Tempo " + cliente.tempo/10, 450, 20);
+        font.draw(batch, "Tempo " + cliente.tempo / 10, 450, 20);
         batch.end();
     }
 
@@ -267,8 +280,10 @@ public class App extends ApplicationAdapter {
         return -1;
     }
 
-    private void initPersonagens(Pacman pacMan, Ghost[] ghosts) {
-        pacMan.init(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+    private void initPersonagens() {
+        App.cliente.opIniciaPacMan();
+        App.cliente.pacMan.init(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        App.cliente.opIniciaGhost();
         for (int i = 0; i < cliente.ghosts.length; i++) {
             int x;
             int y;
@@ -302,17 +317,11 @@ public class App extends ApplicationAdapter {
     private void verificaComeuDoce(Pacman pacMan, Map doces) {
         int tipoDoce = pacMan.comeDoce(doces);
         if (tipoDoce != -1) { //se o pacman comeu algum tipo de doce
+            App.cliente.opDoce(tipoDoce);
             if (tipoDoce == 1) {//se foi um doce grande
                 for (Ghost ghost : cliente.ghosts) {
                     ghost.transformaVulneravel();
-                    cliente.pontos += PONTO_DOCE_GRANDE;
                 }
-            } else {
-                cliente.pontos += PONTO_DOCE_PEQUENO;
-            }
-            cliente.docesRestantes--;
-            if (cliente.docesRestantes == 0) {
-                cliente.estadoJogo = ESTADO_NIVEL_COMPLETO;
             }
         }
     }

@@ -154,11 +154,10 @@ public class Pacman {
                     ghosts[i].personagem.getWidth(), ghosts[i].personagem.getHeight());
             if (Intersector.overlaps(rGhost, rPac)) {
                 if (ghosts[i].isNormal()) {
-                    this.vivo = false;
+                    App.cliente.opPacManMorto();
                     this.delay = DELAY_MAX;
                     this.frameAtual = 8;
                     this.personagem.setRegion(frames[frameAtual]);
-                    this.vidas--;
                 }
                 return i;
             }

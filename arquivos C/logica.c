@@ -2,7 +2,7 @@
 #include <time.h>
 #include <math.h>
 
-void insereConcatenaNumero(int n) {
+void insereConcatenaInt(int n) {
     char numConvert[5];
     sprintf(numConvert, "%d", n);
     strcat(resposta, numConvert);
@@ -81,11 +81,12 @@ void inicializaFruta() {
 }
 
 char *op001() {
+    inicializaDados();
     strcpy(resposta, "001\0");
-    insereConcatenaNumero(estadoJogo);
-    insereConcatenaNumero(nivel);
-    insereConcatenaNumero(pontos);
-    insereConcatenaNumero(tempo);
+    insereConcatenaInt(estadoJogo);
+    insereConcatenaInt(nivel);
+    insereConcatenaInt(pontos);
+    insereConcatenaInt(tempo);
     strcat(resposta, caminhoSprites);
     strcat(resposta, "#\0");
     strcat(resposta, caminhoTiledMap);
@@ -94,7 +95,6 @@ char *op001() {
 }
 
 char *op002(char n) {
-
     switch (n) {
         case '0':
             estadoJogo = ESTADO_INICIO;
@@ -119,8 +119,8 @@ char *op002(char n) {
             break;
         case '3':
             estadoJogo = ESTADO_FIM;
-            nivel = ABERTURA;
-            caminhoMapa = "maps/level3.tmx";
+            nivel = VENCEDOR;
+            caminhoMapa = "maps/win.tmx";
             inicializaPacMan(pacManVidas);
             inicializaGhosts();
             break;
@@ -133,43 +133,43 @@ char *op002(char n) {
 
 void geraRespostaOp002() {
     strcpy(resposta, "002\0");
-    insereConcatenaNumero(nivel);
+    insereConcatenaInt(nivel);
     strcat(resposta, caminhoMapa); //caminho do mapa do nivel
     strcat(resposta, "#");
-    insereConcatenaNumero(indiceParedes);
-    insereConcatenaNumero(indicePontosDecisao);
-    insereConcatenaNumero(indiceDoces);
-    insereConcatenaNumero(pacManVelocidade);
-    insereConcatenaNumero(pacManVidas);
-    insereConcatenaNumero(pacManVivo);
-    insereConcatenaNumero(pacManDirecaoAtual);
-    insereConcatenaNumero(pacManDirecaoPretendida);
+    insereConcatenaInt(indiceParedes);
+    insereConcatenaInt(indicePontosDecisao);
+    insereConcatenaInt(indiceDoces);
+    insereConcatenaInt(pacManVelocidade);
+    insereConcatenaInt(pacManVidas);
+    insereConcatenaInt(pacManVivo);
+    insereConcatenaInt(pacManDirecaoAtual);
+    insereConcatenaInt(pacManDirecaoPretendida);
     insereConcatenaFloat(pacManX);
     insereConcatenaFloat(pacManY);
-    insereConcatenaNumero(frutaVisivel);
-    insereConcatenaNumero(frutaProbabilidade);
-    insereConcatenaNumero(frutaX);
-    insereConcatenaNumero(frutaY);
-    insereConcatenaNumero(docesRestantes);
+    insereConcatenaInt(frutaVisivel);
+    insereConcatenaInt(frutaProbabilidade);
+    insereConcatenaInt(frutaX);
+    insereConcatenaInt(frutaY);
+    insereConcatenaInt(docesRestantes);
     int i;
     for (i = 0; i < 4; i++) {
-        insereConcatenaNumero(ghosts[i].estado);
-        insereConcatenaNumero(ghosts[i].direcao);
-        insereConcatenaNumero(ghosts[i].velocidade);
-        insereConcatenaNumero(ghosts[i].tempoSerLivre);
-        insereConcatenaNumero(ghosts[i].tempoInvulneravel);
-        insereConcatenaNumero(ghosts[i].seguePacMan);
-        insereConcatenaNumero(ghosts[i].x);
-        insereConcatenaNumero(ghosts[i].y);
+        insereConcatenaInt(ghosts[i].estado);
+        insereConcatenaInt(ghosts[i].direcao);
+        insereConcatenaInt(ghosts[i].velocidade);
+        insereConcatenaInt(ghosts[i].tempoSerLivre);
+        insereConcatenaInt(ghosts[i].tempoInvulneravel);
+        insereConcatenaInt(ghosts[i].seguePacMan);
+        insereConcatenaInt(ghosts[i].x);
+        insereConcatenaInt(ghosts[i].y);
     }
-    insereConcatenaNumero(estadoJogo);
+    insereConcatenaInt(estadoJogo);
     strcat(resposta, "\n\0");
 }
 
 char *op003(char teclaPressionada[]) {
     strcpy(resposta, "003\0");
     estadoJogo = ESTADO_JOGANDO;
-    insereConcatenaNumero(estadoJogo);
+    insereConcatenaInt(estadoJogo);
     int tecla = atoi(teclaPressionada);
     switch (tecla) {
         case 21: //tecla left
@@ -185,7 +185,7 @@ char *op003(char teclaPressionada[]) {
             pacManDirecaoAtual = BAIXO;
             break;
     }
-    insereConcatenaNumero(pacManDirecaoAtual);
+    insereConcatenaInt(pacManDirecaoAtual);
     strcat(resposta, "\n\0");
     return resposta;
 }
@@ -199,7 +199,7 @@ char *op004() {
         frutaProbabilidade += FATOR_PROBABILIDADE;
     }
     strcpy(resposta, "004\0");
-    insereConcatenaNumero(frutaVisivel);
+    insereConcatenaInt(frutaVisivel);
     strcat(resposta, "\n\0");
     return resposta;
 }
@@ -209,8 +209,8 @@ char *op005() {
     frutaVisivel = 0;
     frutaProbabilidade = 0;
     strcpy(resposta, "005\0");
-    insereConcatenaNumero(pontos);
-    insereConcatenaNumero(frutaVisivel);
+    insereConcatenaInt(pontos);
+    insereConcatenaInt(frutaVisivel);
     strcat(resposta, "\n\0");
     return resposta;
 }
@@ -232,7 +232,7 @@ char *op006(char teclaPressionada[]) {
             pacManDirecaoPretendida = BAIXO;
             break;
     }
-    insereConcatenaNumero(pacManDirecaoPretendida);
+    insereConcatenaInt(pacManDirecaoPretendida);
     strcat(resposta, "\n\0");
     return resposta;
 }
@@ -244,7 +244,7 @@ char *op007(float x, float y, int dirPretLivre) {
     if (dirPretLivre == 1) {
         pacManDirecaoAtual = pacManDirecaoPretendida;
     }
-    insereConcatenaNumero(pacManDirecaoAtual);
+    insereConcatenaInt(pacManDirecaoAtual);
     switch (pacManDirecaoAtual) {
         case ESQUERDA:
             pacManX -= pacManVelocidade;
@@ -268,33 +268,33 @@ char *op007(float x, float y, int dirPretLivre) {
 char *op008() {
     strcpy(resposta, "008\0");
     pacManDirecaoAtual = PARADO;
-    insereConcatenaNumero(pacManDirecaoAtual);
+    insereConcatenaInt(pacManDirecaoAtual);
     strcat(resposta, "\n\0");
     return resposta;
 }
 
-char *op009(char id, char direcao){
+char *op009(char id, char direcao) {
     strcpy(resposta, "009\0");
     int idG = id - '0';
     int dirG = direcao - '0';
     ghosts[idG].direcao = dirG;
-    insereConcatenaNumero(dirG);
-    strcat(resposta,"\n\0");
+    insereConcatenaInt(dirG);
+    strcat(resposta, "\n\0");
     return resposta;
 }
 
 char *op010(int i, int x, int y) {
     strcpy(resposta, "010\0");
-    int a,b,c,d;
-    a =sqrt(pow(((ghosts[i].x - ghosts[i].velocidade) - x), 2) + pow(ghosts[i].y - y, 2));
-    b =sqrt(pow((ghosts[i].x - x), 2) + pow(ghosts[i].y + ghosts[i].velocidade - y, 2));
-    c= sqrt(pow((ghosts[i].x + ghosts[i].velocidade) - x, 2) + pow(ghosts[i].y - y, 2));
-    d =sqrt(pow((ghosts[i].x) - x, 2) + pow(ghosts[i].y - ghosts[i].velocidade - y, 2));
-    insereConcatenaNumero(a);
-    insereConcatenaNumero(b);
-    insereConcatenaNumero(c);
-    insereConcatenaNumero(d);
-    strcat(resposta,"\n\0");
+    int a, b, c, d;
+    a = sqrt(pow(((ghosts[i].x - ghosts[i].velocidade) - x), 2) + pow(ghosts[i].y - y, 2));
+    b = sqrt(pow((ghosts[i].x - x), 2) + pow(ghosts[i].y + ghosts[i].velocidade - y, 2));
+    c = sqrt(pow((ghosts[i].x + ghosts[i].velocidade) - x, 2) + pow(ghosts[i].y - y, 2));
+    d = sqrt(pow((ghosts[i].x) - x, 2) + pow(ghosts[i].y - ghosts[i].velocidade - y, 2));
+    insereConcatenaInt(a);
+    insereConcatenaInt(b);
+    insereConcatenaInt(c);
+    insereConcatenaInt(d);
+    strcat(resposta, "\n\0");
     return resposta;
 }
 
@@ -302,7 +302,7 @@ char *op011(int id, float x, float y) {
     strcpy(resposta, "011\0");
     ghosts[id].x = x;
     ghosts[id].y = y;
-    
+
     switch (ghosts[id].direcao) {
         case ESQUERDA:
             ghosts[id].x -= ghosts[id].velocidade;
@@ -317,9 +317,168 @@ char *op011(int id, float x, float y) {
             ghosts[id].y -= ghosts[id].velocidade;
             break;
     }
-    
+
     insereConcatenaFloat(ghosts[id].x);
     insereConcatenaFloat(ghosts[id].y);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op012(char id, char estado) {
+    strcpy(resposta, "012\0");
+    int idG = id - '0';
+    int estG = estado - '0';
+    ghosts[idG].estado = estG;
+    insereConcatenaInt(estG);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op013(char id) {
+    strcpy(resposta, "013\0");
+    int idG = id - '0';
+    ghosts[idG].tempoSerLivre--;
+    insereConcatenaInt(ghosts[idG].tempoSerLivre);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op014(char id) {
+    strcpy(resposta, "014\0");
+    int idG = id - '0';
+    if (ghosts[idG].tempoInvulneravel == 0) {
+        ghosts[idG].tempoInvulneravel = TEMPO_VULNERAVEL;
+    } else {
+        ghosts[idG].tempoInvulneravel--;
+    }
+    insereConcatenaInt(ghosts[idG].tempoInvulneravel);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op015(char idG) {
+    strcpy(resposta, "015\0");
+    int id = idG - '0';
+    if (ghosts[id].estado == ESTADO_NORMAL) {
+        pontos += PONTO_MORRE;
+        estadoJogo = ESTADO_PACMAN_MORTO;
+    } else if (ghosts[id].estado == ESTADO_VULNERAVEL) {
+        ghosts[id].estado = ESTADO_OLHOS;
+        pontos += PONTO_GHOST;
+    }
+    insereConcatenaInt(pontos);
+    insereConcatenaInt(estadoJogo);
+    insereConcatenaInt(ghosts[id].estado);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op016() {
+    strcpy(resposta, "016\0");
+    pacManVidas--;
+    pacManVivo = 0;
+    insereConcatenaInt(pacManVidas);
+    insereConcatenaInt(pacManVivo);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op017() {
+    strcpy(resposta, "017\0");
+    frutaProbabilidade = FATOR_PROBABILIDADE;
+    if (pacManVidas == 0) {
+        estadoJogo = ESTADO_FIM;
+    } else {
+        estadoJogo = ESTADO_INICIO;
+    }
+    insereConcatenaInt(estadoJogo);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op018() {
+    strcpy(resposta, "018\0");
+    pacManX = JANELA_LARGURA / 2 - 24 / 2;
+    pacManY = (JANELA_ALTURA / 2 - 24 / 2) - 48;
+    pacManVivo = 1;
+    pacManDirecaoAtual = PARADO;
+    pacManDirecaoPretendida = PARADO;
+    insereConcatenaInt(pacManX);
+    insereConcatenaInt(pacManY);
+    insereConcatenaInt(pacManVivo);
+    insereConcatenaInt(pacManDirecaoAtual);
+    insereConcatenaInt(pacManDirecaoPretendida);
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char*op019() {
+    strcpy(resposta, "019\0");
+    int i;
+    for (i = 0; i < 4; i++) {
+        int x;
+        int y;
+        if (i != 3) {
+            x = (i + 11) * 24;
+            y = 12 * 24;
+        } else {
+            x = 12 * 24;
+            y = 14 * 24;
+        }
+        ghosts[i].estado = (i == 3) ? ESTADO_NORMAL : ESTADO_PRESO;
+        ghosts[i].direcao = (i == 3) ? DIREITA : PARADO;
+        ghosts[i].tempoSerLivre = (i == 3) ? 0 : TEMPO_PRESO * (i + 1);
+        ghosts[i].tempoInvulneravel = 0;
+        ghosts[i].x = x;
+        ghosts[i].y = y;
+
+        insereConcatenaInt(ghosts[i].estado);
+        insereConcatenaInt(ghosts[i].direcao);
+        insereConcatenaInt(ghosts[i].tempoSerLivre);
+        insereConcatenaInt(ghosts[i].tempoInvulneravel);
+        insereConcatenaInt(ghosts[i].x);
+        insereConcatenaInt(ghosts[i].y);
+
+    }
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op020(char d) {
+    strcpy(resposta, "020\0");
+    int doce = d - '0';
+    if (doce == 1) {//se foi um doce grande
+       pontos += PONTO_DOCE_GRANDE;
+    } else {
+        pontos += PONTO_DOCE_PEQUENO;
+    }
+    docesRestantes--;
+    if (docesRestantes == 0) {
+        estadoJogo = ESTADO_NIVEL_COMPLETO;
+    }
+    
+    insereConcatenaInt(pontos);
+    insereConcatenaInt(docesRestantes);
+    insereConcatenaInt(estadoJogo);
+    strcat(resposta, "\n\0");
+    return resposta;
+
+}
+
+char *op021(){
+    strcpy(resposta, "021\0");
+    caminhoMapa = "maps/ajuda.tmx";
+    strcat(resposta,caminhoMapa);
+    strcat(resposta,"#");
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op022(){
+    strcpy(resposta, "022\0");
+    caminhoMapa = "maps/win.tmx";
+    strcat(resposta,caminhoMapa);
+    strcat(resposta,"#");
     strcat(resposta, "\n\0");
     return resposta;
 }

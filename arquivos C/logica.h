@@ -15,6 +15,7 @@
 #define NIVEL_2 2
 #define NIVEL_3 3
 #define AJUDA 4
+#define VENCEDOR 5
 
 #define ESQUERDA 0
 #define CIMA 1
@@ -106,4 +107,15 @@ char *op008();
 char *op009(char id, char direcao);
 char *op010(int id, int x, int y);
 char *op011(int id, float x, float y);
+char *op012(char id, char estado);
+char *op013(char id);
+char *op014(char id);
+char *op015(char id);
+char *op016();
+char *op017();
+char *op018();
+char *op019();
+char *op020(char doce);
+char *op021();
+char *op022();
 #endif /* __LOGICA_H */

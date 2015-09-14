@@ -81,7 +81,7 @@ public class Ghost {
             } else {
                 if (this.estado == ESTADO_PRESO) {
                     this.personagem.setPosition(12 * 24, 14 * 24);
-                    this.estado = this.tempoParaInvulneravel == 0 ? ESTADO_NORMAL : ESTADO_VULNERAVEL;
+                    App.cliente.opRequisitaEstadoGhost(id,this.tempoParaInvulneravel == 0 ? ESTADO_NORMAL : ESTADO_VULNERAVEL);
                 }
                 if (colidiuParedes(paredes, direcao) || direcao == App.PARADO || estaEmPontoDecisao(pontosDecisao)) {
                     int direcaoAnterior = direcao;
@@ -93,7 +93,7 @@ public class Ghost {
             }
             App.cliente.opGhostAnda(id, this.personagem.getX(), this.personagem.getY());
         } else {
-            tempoParaFicarLivre--;
+            App.cliente.opRequisitaTempoFicarLivre(id);
         }
     }
 
@@ -117,7 +117,7 @@ public class Ghost {
                 break;
             case ESTADO_VULNERAVEL:
                 if (this.tempoParaInvulneravel == 0) {
-                    this.estado = ESTADO_NORMAL;
+                    App.cliente.opRequisitaEstadoGhost(id,ESTADO_NORMAL);
                 } else if (this.tempoParaInvulneravel > TEMPO_VULNERAVEL / 4) {
                     this.frameAtual = 6;
                     this.personagem.setRegion(frames[frameAtual]);
@@ -133,7 +133,7 @@ public class Ghost {
                 break;
             case ESTADO_OLHOS:
                 if (this.personagem.getX() == (12 * 24) && this.personagem.getY() == (14 * 24)) {
-                    this.estado = ESTADO_NORMAL;
+                    App.cliente.opRequisitaEstadoGhost(id,ESTADO_NORMAL);
                 }
                 this.frameAtual = this.direcao + 7;
                 this.personagem.setRegion(frames[frameAtual]);
@@ -197,8 +197,8 @@ public class Ghost {
     }
 
     void transformaVulneravel() {
-        this.estado = this.estado != ESTADO_PRESO ? ESTADO_VULNERAVEL : this.estado;
-        this.tempoParaInvulneravel = TEMPO_VULNERAVEL;
+        App.cliente.opRequisitaEstadoGhost(id,this.estado != ESTADO_PRESO ? ESTADO_VULNERAVEL : this.estado);
+        App.cliente.opRequisitaTempoParaInvulneravel(id);
         this.delay = DELAY_MAX;
     }
 

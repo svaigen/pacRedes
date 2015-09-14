@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
                 int id;
                 int lixo;
                 sscanf(buffer, "%d#%d#%d#%d\n", &lixo, &id, &x, &y);
-                resposta = op010(id, x, y); 
+                resposta = op010(id, x, y);
                 break;
             }
             case 11:
@@ -125,9 +125,42 @@ int main(int argc, char *argv[]) {
                 int id;
                 int lixo;
                 sscanf(buffer, "%d#%d#%f#%f\n", &lixo, &id, &x, &y);
-                resposta = op011(id, x, y); 
+                resposta = op011(id, x, y);
                 break;
             }
+            case 12: //requisita estado do fantasma
+                resposta = op012(buffer[3], buffer[4]);
+                break;
+            case 13: //atualiza tempo preso do fantasma
+                resposta = op013(buffer[3]);
+                break;
+            case 14: //atualiza tempo invulneravel do fantasma
+                resposta = op014(buffer[3]);
+                break;
+            case 15:
+                resposta = op015(buffer[3]);
+                break;
+            case 16:
+                resposta = op016();
+                break;
+            case 17:
+                resposta = op017();
+                break;
+            case 18:
+                resposta = op018();
+                break;
+            case 19:
+                resposta = op019();
+                break;
+            case 20:
+                resposta = op020(buffer[3]);
+                break;
+            case 21:
+                resposta = op021();
+                break;
+            case 22:
+                resposta = op022();
+                break;
         }
         n = write(newsockfd, resposta, strlen(resposta));
         //printf("Mensagem recebida pelo servidor global: %s\n",buffer);
