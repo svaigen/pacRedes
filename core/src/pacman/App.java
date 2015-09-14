@@ -148,7 +148,8 @@ public class App extends ApplicationAdapter {
                 }
                 escreveInformacoes();
                 fim = System.currentTimeMillis();
-                cliente.tempo += (fim - inicio);
+                //cliente.tempo += (fim - inicio);
+                cliente.opRequisitaTempo();
                 break;
             case ESTADO_PACMAN_MORTO:
                 cliente.pacMan.animate();
@@ -173,7 +174,7 @@ public class App extends ApplicationAdapter {
                         break;
                     default: //completou nivel 3
                         venceu = true;
-                    //cliente.estadoJogo = ESTADO_FIM;
+                    cliente.estadoJogo = ESTADO_FIM;
 
                 }
                 break;
@@ -200,7 +201,7 @@ public class App extends ApplicationAdapter {
         font.draw(batch, "Pontos: " + cliente.pontos, 10, 20);
         font.draw(batch, "Vidas: " + cliente.pacMan.vidas, 10, 40);
         font.draw(batch, "Nível " + cliente.nivel, 10, 60);
-        font.draw(batch, "Tempo " + cliente.tempo / 10, 450, 20);
+        font.draw(batch, "Tempo " + cliente.tempo, 450, 20);
         batch.end();
     }
 

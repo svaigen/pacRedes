@@ -51,6 +51,7 @@ int estadoJogo;
 int nivel;
 int pontos;
 int tempo;
+int tempoInicial;
 char *caminhoTiledMap;
 char *caminhoMapa;
 char *caminhoSprites;
@@ -118,4 +119,5 @@ char *op019();
 char *op020(char doce);
 char *op021();
 char *op022();
+char *op023();
 #endif /* __LOGICA_H */

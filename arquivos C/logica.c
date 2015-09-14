@@ -97,6 +97,8 @@ char *op001() {
 char *op002(char n) {
     switch (n) {
         case '0':
+            tempoInicial = time(0);
+            tempo = tempoInicial;
             estadoJogo = ESTADO_INICIO;
             nivel = NIVEL_1;
             caminhoMapa = "maps/level1.tmx";
@@ -163,6 +165,8 @@ void geraRespostaOp002() {
         insereConcatenaInt(ghosts[i].y);
     }
     insereConcatenaInt(estadoJogo);
+    tempo = time(0) - tempoInicial;
+    insereConcatenaInt(tempo);
     strcat(resposta, "\n\0");
 }
 
@@ -479,6 +483,14 @@ char *op022(){
     caminhoMapa = "maps/win.tmx";
     strcat(resposta,caminhoMapa);
     strcat(resposta,"#");
+    strcat(resposta, "\n\0");
+    return resposta;
+}
+
+char *op023(){
+    strcpy(resposta, "023\0");
+    tempo = time(0) - tempoInicial;
+    insereConcatenaInt(tempo);
     strcat(resposta, "\n\0");
     return resposta;
 }

@@ -189,7 +189,8 @@ public class Cliente {
         initFruta(dados);
         docesRestantes = Integer.parseInt(dados[16]);
         initGhosts(dados);
-        estadoJogo = Byte.parseByte(dados[dados.length - 1]);
+        estadoJogo = Byte.parseByte(dados[dados.length - 2]);
+        tempo = Integer.parseInt(dados[dados.length-1]);
     }
 
     void opIniciaMovimentacao(int teclaPressionada) {
@@ -371,5 +372,12 @@ public class Cliente {
         caminhoTiledMap = dados[0];
         App.tiledMap = new TmxMapLoader().load(caminhoTiledMap);
         App.tiledMapRenderer = new OrthogonalTiledMapRenderer(App.tiledMap);
+    }
+
+    void opRequisitaTempo() {
+        String envio = "023\n\0";
+        String resposta = enviaOperacao(23, envio);
+        String dados[] = resposta.substring(3).split("#");
+        tempo = Integer.parseInt(dados[0]);
     }
 }

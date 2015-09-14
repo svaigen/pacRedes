@@ -161,6 +161,9 @@ int main(int argc, char *argv[]) {
             case 22:
                 resposta = op022();
                 break;
+            case 23:
+                resposta = op023();
+                break;
         }
         n = write(newsockfd, resposta, strlen(resposta));
         //printf("Mensagem recebida pelo servidor global: %s\n",buffer);
