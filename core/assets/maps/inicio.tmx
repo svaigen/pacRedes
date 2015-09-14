@@ -3,14 +3,17 @@
  <tileset firstgid="1" name="level1tile" tilewidth="24" tileheight="24" tilecount="8">
   <image source="level1tile.png" width="192" height="24"/>
  </tileset>
+ <tileset firstgid="9" name="inicio" tilewidth="24" tileheight="24" tilecount="625">
+  <image source="inicio.png" width="603" height="604"/>
+ </tileset>
  <layer name="Camada de Tiles 1" width="25" height="25">
   <data encoding="base64" compression="zlib">
-   eJztwwEJAAAMBKH7/qWXY6Dgqqmq+uoB+w0Ccg==
+   eJy91OdPVWcYAPB7MU3btOlyW7WKWBCRpYiKCCiigAW14AAEFQdqEUFRrNpl07333nvv9k/oHn9Cp41p2qZNmtbZ3w3vjUfUUL/0wy/P85z3fc5zznm5pMZisXGkMZ5LSSeDCWQykSwmkU0OueSRz2SmUMBUCpnGdGZQxEyKmUUJpZQxmzmUM5cK5jGfSqqoZkF4zhpqWciiMCOhjo/5hE/5jM/5gi9PstZfHe39igba+Zbv+J4f+JGf2HeStf7qaO/PbOUGDnCQQxzmCEeJxU9c66+O9sa5TfokA+WDGMwQhjKM4fET1/qro70jeN79P6KRJlbQTAsrWcVqWlnDWtaxnjY2sJFN4TzqWcJSlrGcJ/iGbXSznR30sJMr2cVu9nAVV3MN13Ide7k+nMdmOthCJ118yH5u5w7u5C7u5h7u5T7u5wEe5CEe5hEe5TEeD+dxIzdxM7dwK18zwDd7QXyRl3iZV3iV13idN3iTt3ibd3iX93ifD2K95/GU+DTP8CzPhW810tooRnMJYxhLKuNII5bi9y+mk8EEMplIFpPIJodc8siP985OfKsC+VQKmcb0cM8icSbFoS4RSyljNnMoZy4VzGM+lVRRHe/9DSa+VY28loUsYnG4Z51Yz5JQLxOX00AjTaygmZawJ2G1vJU1kfdYL2+L7ElqD9c6QuwUuxJ/+ym9uiM9PSEfxS75bvZE3iMWehIxsTUeO5Yn47DIWrSOPlOiPhw/fl/yf2LfGcn6VLOi+081I3rtdGYkrw9L+e/vkdh3ujP63rPvMydnjEo5/ntF+/bFj83YH/JfQvxV/I3fQ/2H+Gfk3P8K+d/iPxzgIIfivbOPcDTsiZPCgNB7RohnchZnh/oczg35eZzPBVzIRQxkEIMZwtDw7MMZwcWMDP2jQxzDWFJDncb4kKeTwQQymUgWk8gmh1zyyGcyUygI/YVMS5wdMygK14uZRQmllDGbOZQzlwrmMZ9KqqhmAZdRQy0LWcRiLqeOepawlGUsp4FGmlhBMy2sZBWraWUNa1nHetrYwEY2cQXtbKaDLXTSxVa20c12dtDDzv/pPf4FRpfZEA==
   </data>
  </layer>
  <layer name="Camada de Tiles 2" width="25" height="25">
   <data encoding="base64" compression="zlib">
-   eJztj9EKACAIAx3+/z9Hb8Nc0UsQ7CCiWZ1GGGOMeU3SPhdKBqrxWeVJ7zsHyp1aQ6yOrifO1D83DjUHhCM2DjXfqU9jfmUAc/4Arw==
+   eJztkVEKwCAMQ2W9hPc/qQwUQmiKMvaz5YFI09rQ2poxxpgT+pXHSs8IuGPWorZizis9oGfmgXWs3fc6mRfXReHBc3Budw7cHfdTHmpXal7eF1L9XVW3++6Jxxt8xeNvDLyFBKc=
   </data>
  </layer>
 </map>
