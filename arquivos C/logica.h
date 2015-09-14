@@ -7,7 +7,7 @@
 /*DEFINICOES*/
 #define JANELA_ALTURA 600
 #define JANELA_LARGURA 600
-#define DOCES_TOTAIS 256
+#define DOCES_TOTAIS 236
 #define FATOR_PROBABILIDADE  0.1
 
 #define ABERTURA 0
@@ -37,6 +37,12 @@
 #define TEMPO_PRESO  100
 #define TEMPO_VULNERAVEL  800
 
+#define PONTO_DOCE_PEQUENO 10
+#define PONTO_DOCE_GRANDE 50
+#define PONTO_GHOST 250
+#define PONTO_MORRE -500
+#define PONTO_FRUTA 500
+
 /*DADOS GERAIS*/
 int janelaLargura;
 int janelaAltura;
@@ -60,8 +66,8 @@ int pacManVivo;
 int pacManDirecaoAtual;
 int pacManDirecaoPretendida;
 float pacManVelocidade;
-int pacManX;
-int pacManY;
+float pacManX;
+float pacManY;
 
 /*DADOS GHOSTS*/
 struct ghost {
@@ -91,4 +97,13 @@ void inicializaFruta();
 void geraRespostaOp002();
 char *op001();
 char *op002(char nivel);
+char *op003(char teclaPressionada[]);
+char *op004();
+char *op005();
+char *op006(char teclaPressionada[]);
+char *op007(float x, float y, int dirPretLivre);
+char *op008();
+char *op009(char id, char direcao);
+char *op010(int id, int x, int y);
+char *op011(int id, float x, float y);
 #endif /* __LOGICA_H */
